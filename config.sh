@@ -25,7 +25,7 @@
 
 # This will be the folder name under /magisk
 # This should also be the same as the id in your module.prop to prevent confusion
-MODID=jdsp
+MODID=ainur_JamesDSPManager
 AUDMODLIBID=audmodlib
 
 # Set to true if you need to enable Magic Mount
@@ -50,11 +50,12 @@ LATESTARTSERVICE=false
 print_modname() {
   ui_print " "
   ui_print "      ****************************************"
+  ui_print "      *              A I N U R               *" 
   ui_print "      *           JamesDSPManager            *"
   ui_print "      ****************************************"
   ui_print "      *           Universal - Mod            *"
   ui_print "      *             Version 1.0              *"
-  ui_print "      *              by ahrion               *"
+  ui_print "      *         by ahrion, zackptg5          *"
   ui_print "      ****************************************"
   ui_print " "
 }

@@ -543,22 +543,28 @@ unity_mod_copy() {
   	echo "$SH/$AUDMODLIBID-props$EXT" >> $INFO
   fi
   
-  # INSTALL APPS
-  ui_print "$APPTXT"
-  $CP_PRFX $INSTALLER/system/app/$APP1/$APP1.apk $UNITY$SYS/$APP1PATH/$APP1.apk$CP_SFFX
-
   # ADD BUILDPROPS
   ui_print "   Adding build props..."
   unity_prop_copy $INSTALLER/common/audmodlib-props.prop
   
+  # INSTALL APPS
+  ui_print "$APPTXT"
+  $CP_PRFX $INSTALLER/system/app/$APP1/$APP1.apk $UNITY$SYS/$APP1PATH/$APP1.apk$CP_SFFX
+  
   # INSTALL LIBRARIES
   ui_print "   Installing libraries..."
-  $CP_PRFX system/lib/libjamesDSPImpulseToolbox.so $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so$CP_SFFX
-  $CP_PRFX system/lib/soundfx/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so$CP_SFFX
+  if [ "$ABI" == "arm" ]; then
+    ui_print "    Installing lib for arm/arm64 device"
+    $CP_PRFX $INSTALLER/system/lib/arm/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so $CP_SFFX
+	unzip -pq $INSTALLER/system/app/$APP1/$APP1.apk lib/armeabi-v7a/libjamesDSPImpulseToolbox.so > $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so
+  else
+    ui_print "    Installing lib for x86 device"
+    $CP_PRFX $INSTALLER/system/lib/x86/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so $CP_SFFX
+	unzip -pq $INSTALLER/system/app/$APP1/$APP1.apk lib/x86/libjamesDSPImpulseToolbox.so > $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so
+  fi
   
   if [ "$MAGISK" == false ]; then
-	echo "$UNITY$SYS/lib/libjamesDSPImpulseToolbox.so" >> $INFO
-	echo "$UNITY$SYS/lib/soundfx/libjamesdsp.so" >> $INFO
+	echo "$UNITY$SYS/lib/soundfx/libjamesDSPImpulseToolbox.so" >> $INFO													  
     sed -i 's/\/system\///g' $INFO
   fi
   #### ^ INSERT YOUR FILE INSTALL ^ ####
