@@ -1,0 +1,1017 @@
+#!/sbin/sh
+##########################################################################################
+#
+# Unity Installer v2.0
+# by ahrion & Zackptg5
+# 
+##########################################################################################
+
+# Detect whether in boot mode
+ps | grep zygote | grep -v grep >/dev/null && BOOTMODE=true || BOOTMODE=false
+$BOOTMODE || ps -A 2>/dev/null | grep zygote | grep -v grep >/dev/null && BOOTMODE=true
+
+# Default permissions
+umask 022
+
+##########################################################################################
+# Flashable update-binary preparation
+##########################################################################################
+
+OUTFD=$2
+ZIP=$3
+
+# DETERMINE IF PIXEL (A/B OTA) DEVICE
+ABDeviceCheck=$(cat /proc/cmdline | grep slot_suffix | wc -l)
+if [ "$ABDeviceCheck" -gt 0 ]; then
+  isABDevice=true
+  if [ -d "/system_root" ]; then
+    ROOT=/system_root
+    SYS=$ROOT/system
+  else
+    ROOT=""
+    SYS=$ROOT/system/system
+  fi
+else
+  isABDevice=false
+  ROOT=""
+  SYS=/system
+fi
+
+# Mount /data and /cache to access MAGISKBIN
+mount /data 2>/dev/null
+mount /cache 2>/dev/null
+
+# This path should work in any cases
+TMPDIR=/dev/tmp
+INSTALLER=$TMPDIR/install
+MOUNTPATH=/magisk
+
+rm -rf $TMPDIR 2>/dev/null
+mkdir -p $INSTALLER
+unzip -o "$ZIP" module.prop config.sh 'common/*' -d $INSTALLER 2>/dev/null
+
+# Load utility fuctions
+. $INSTALLER/common/util_functions.sh
+get_outfd
+
+if is_mounted /data; then
+  IMG=/data/magisk.img
+  MAGISKBIN=/data/magisk
+  if $BOOTMODE; then
+    MOUNTPATH=/dev/magisk_merge
+    IMG=/data/magisk_merge.img
+  fi
+else
+  IMG=/cache/magisk.img
+  MAGISKBIN=/cache/data_bin
+fi
+
+# DETECT IF SYSLESS SUPERSU
+supersuimg=$(ls /cache/su.img /data/su.img 2>/dev/null);
+
+# DETECT IS SUPERSU MOUNTED
+supersu_is_mounted() {
+  case `mount` in
+    *" $1 "*) echo 1;;
+    *) echo 0;;
+  esac;
+}
+
+# MAKE SYS DIR
+sys_mk_ch() { 
+  mkdir -p "$1"
+  chmod "$2" "$1"
+}
+
+# COPY SYS FILE
+sys_cp_ch() {
+  cp "$1" "$2"
+  chmod "$3" "$2"
+  restorecon "$2"
+}
+
+# COPY SYS FILE (BUT BACKUP OLD ONES FIRST)
+sys_cpbak_ch() {
+  if [ -f "$2" ]; then
+	mv -f "$2" "$2.bak"
+	echo "$2.bak" >> $INFO
+  fi
+  echo "$2" >> $INFO
+  cp "$1" "$2"
+  chmod "$3" "$2"
+}
+
+# REMOVE MOD FILE
+sys_rm_ch() {
+  if [ -e "$1.bak" ]; then
+	mv -f "$1.bak" "$1"
+  else
+    rm -f "$1"
+  fi
+}
+
+##########################################################################################
+# Prepare
+##########################################################################################
+
+[ ! -f $INSTALLER/config.sh ] && abort "! Unable to extract zip file!"
+
+. $INSTALLER/config.sh
+
+MODPATH=$MOUNTPATH/$MODID
+AUDMODLIBPATH=$MOUNTPATH/$AUDMODLIBID
+
+# Print mod name
+print_modname
+
+#### MOUNT FILESYS ####
+ui_print "- Mounting filesystems -"
+
+if [ "$supersuimg" ]; then
+  if [ "$(supersu_is_mounted /su)" == 0 ]; then
+    ui_print "   Mounting /su...";
+    test ! -e /su && mkdir /su;
+    mount -t ext4 -o rw,noatime $supersuimg /su 2>/dev/null
+    for i in 0 1 2 3 4 5 6 7; do
+      test "$(supersu_is_mounted /su)" == 1 && break;
+      loop=/dev/block/loop$i;
+      mknod $loop b 7 $i;
+      losetup $loop $supersuimg;
+      mount -t ext4 -o loop $loop /su; 2>/dev/null
+    done;
+  fi;
+fi;
+
+SPACE=" "
+if [ $isABDevice == true ]; then
+  ui_print "   ! A/B OTA device detected!"
+  WRITE=rw
+  SPACE="  "
+elif [ -f /data/magisk.img ] || [ -f /cache/magisk.img ] || [ -d /magisk ]; then
+  WRITE=ro
+elif [ ! -f /data/magisk.img ] || [ ! -f /cache/magisk.img ] || [ ! -d /magisk ]; then
+  WRITE=rw
+fi
+
+ui_print "$SPACE  Mounting /system($WRITE)..."
+mount -o $WRITE /system 2>/dev/null
+ui_print "$SPACE  Mounting /vendor($WRITE)..."
+mount -o $WRITE /vendor 2>/dev/null
+
+if [ $isABDevice == true ] || [ ! -d $SYS/vendor ]; then
+  VEN=/vendor
+else
+  VEN=$SYS/vendor
+fi
+
+[ ! -f $SYS/build.prop ] && abort "   ! /system could not be mounted!"
+
+# Detect version and architecture
+api_level_arch_detect
+
+# You can get the Android API version from $API, the CPU architecture from $ARCH
+# Useful if you are creating Android version / platform dependent mods
+
+##########################################################################################
+# UNITY (UN)INSTALLER
+##########################################################################################
+
+### FILE LOCATIONS ###
+# AUDIO EFFECTS
+CONFIG_FILE=$SYS/etc/audio_effects.conf
+HTC_CONFIG_FILE=$SYS/etc/htc_audio_effects.conf
+OTHER_V_FILE=$SYS/etc/audio_effects_vendor.conf
+OFFLOAD_CONFIG=$SYS/etc/audio_effects_offload.conf
+V_CONFIG_FILE=$VEN/etc/audio_effects.conf
+# AUDIO POLICY
+A2DP_AUD_POL=$SYS/etc/a2dp_audio_policy_configuration.xml
+AUD_POL=$SYS/etc/audio_policy.conf
+AUD_POL_CONF=$SYS/etc/audio_policy_configuration.xml
+AUD_POL_VOL=$SYS/etc/audio_policy_volumes.xml
+SUB_AUD_POL=$SYS/etc/r_submix_audio_policy_configuration.xml
+USB_AUD_POL=$SYS/etc/usb_audio_policy_configuration.xml
+V_AUD_OUT_POL=$VEN/etc/audio_output_policy.conf
+V_AUD_POL=$VEN/etc/audio_policy.conf
+# MIXER PATHS
+MIX_PATH=$SYS/etc/mixer_paths.xml
+MIX_PATH_DTP=$SYS/etc/mixer_paths_dtp.xml
+MIX_PATH_i2s=$SYS/etc/mixer_paths_i2s.xml
+MIX_PATH_TASH=$SYS/etc/mixer_paths_tasha.xml
+STRIGG_MIX_PATH=$SYS/sound_trigger_mixer_paths.xml
+STRIGG_MIX_PATH_9330=$SYS/sound_trigger_mixer_paths_wcd9330.xml
+V_MIX_PATH=$VEN/etc/mixer_paths.xml
+# INFO FILE
+if [ -d $SYS/addon.d ]; then
+  INFO=$SYS/addon.d/$MODID-files
+else
+  INFO=$SYS/etc/$MODID-files
+fi
+
+magisk_install() {
+  MAGISK=true
+  MK_PRFX="mkdir -p"
+  CP_PRFX="cp -af"
+  UNITY="$MODPATH"
+  MK_SFFX=""
+  CP_SFFX=""
+  SOURCEDIR="$SOURCEDIR"
+  UNITYPATCH="/cache/magisk/audmodlib"
+}
+
+system_install() {
+  MAGISK=false
+  MK_PRFX="sys_mk_ch"
+  CP_PRFX="sys_cpbak_ch"
+  UNITY=""
+  MK_SFFX=" 0755"
+  CP_SFFX=" 0644"
+  SOURCEDIR=""
+  UNITYPATCH=""
+}
+
+##########################################################################################
+# 
+# Instructions:
+# 
+# 1. This is the unity installer for both Magisk and System install, so be sure to
+#    follow the template provided for "app_install_logic", "unity_mod_wipe",
+#    & "unity_mod_<xxxx>"
+# 2. magisk_audmodlib and files with the audmodlib prefix as such need to remain
+#    untouched unless an update has occured, however use unity_mod_patch to remove
+#    and then add the lines corresponding to your mod
+# 3. The exception to this are the audmodlib-prop files. Put any build props you want to
+#    add/remove into the corresponding file according to the instructions in it
+# 4. If applicable, make "APP1", etc. to be the same name as your .apk/app folder
+#    in system/app/ (i.e. APP1=Ax, APP2=ViPER4Android, APP3=AM3DZirene and so on)
+# 5. common/$MODID.sh, system/addon.d/$MODID.sh & system/su.d/$MODID.sh app specific
+#    scripts will be named the same as your MODID in config.sh (i.e. MODID=v4afx so
+#    common/$MODID.sh=v4afx.sh)
+# 6. Edit common/$MODID.sh to remove or restore the specific audio_effects or
+#    audio_policy files that were added in the unity_mod_patch portion of the installer
+# 7. Add any libraries/effects to remove to the unity_uninstaller
+# 8. You can obviously use your mod specific system.prop or post-fs-data.sh as part of
+#    the mod, but make sure not edit the designated audmodlib specific files
+# 9. DO NOT delete any of the credits for @ahrion or @topjohnwu mentioned in this script
+# 
+##########################################################################################
+
+APP1="JamesDSPManager"
+
+app_install_logic() {
+  ########################################################################################
+  # Logic for correct application installation
+  ########################################################################################
+
+  ########## v DO NOT REMOVE v ##########
+  if [ -d $SYS/priv-app ]; then
+    APPDIR=priv-app
+  else
+    APPDIR=app
+  fi
+  ########## ^ DO NOT REMOVE ^ ##########
+
+  #### v INSERT MORE APPS IF MORE EXIST v ####
+  if [ "$API" -ge "21" ]; then
+    APPTXT="   Installing apps for Lollipop and above..."
+    APP1PATH=$APPDIR/$APP1
+  else
+    APPTXT="   Installing apps for Lollipop and below..."
+    APP1PATH=$APPDIR
+  fi
+  #### ^ INSERT MORE APPS IF MORE EXIST ^ ####
+}
+
+script_install_logic() {
+  ########################################################################################
+  # Logic for correct system script installation
+  ########################################################################################
+
+  ########## v DO NOT REMOVE v ##########
+  # DETERMINE ROOT BOOT SCRIPT TYPE
+  EXT=".sh"
+  if [ "$supersuimg" ] || [ -d /su ]; then
+	  SH=/su/su.d
+  elif [ -d $SYS/su ] || [ -f $SYS/xbin/daemonsu ] || [ -f $SYS/xbin/sugote ]; then
+    SH=$SYS/su.d
+  elif [ -f $SYS/xbin/su ]; then
+  	if [ "$(cat $SYS/xbin/su | grep SuperSU)" ]; then
+  	  SH=$SYS/su.d
+  	else
+  	  SH=$SYS/etc/init.d
+      EXT=""
+  	fi
+  else
+    SH=$SYS/etc/init.d
+    EXT=""
+  fi
+  ########## ^ DO NOT REMOVE ^ ##########
+}
+
+########## v DO NOT REMOVE v ##########
+unity_prop_removal() {
+  if [ "$MAGISK" == true ]; then
+		rm -f $SYS/etc/init.d/$AUDMODLIBID-props
+		rm -f /su/su.d/$AUDMODLIBID-props.sh
+		rm -f $SYS/su.d/$AUDMODLIBID-props.sh
+		AMLPROP="$AUDMODLIBPATH/system.prop"
+		#AMLPROP="$MOUNTPATH/.core/props/audmodlib-props.prop"
+		sed -i "s/setprop //g" $1
+		sed -i "s/ /=/g" $1
+	else
+    	AMLPROP="$SH/$AUDMODLIBID-props$EXT"
+		for AMLSCRIPT in $SYS/etc/init.d/$AUDMODLIBID-props /su/su.d/$AUDMODLIBID-props.sh $SYS/su.d/$AUDMODLIBID-props.sh; do
+		  if [ "$AMLPROP" != "$AMLSCRIPT" ]; then
+				rm -f $AMLSCRIPT
+		  fi
+		done
+	  fi
+  if [ -f $AMLPROP ]; then
+    if [ "$(sed -n '4,$p' $1)" ]; then
+  	  NEWPROPS="$(sed -n '4,$ p' $1)"
+  	  printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
+  	  do
+  	    if [ "$(cat $AMLPROP | grep "$linenew")" ]; then
+  	  	    sed -i "/$linenew/d" $AMLPROP
+        fi
+  	  done
+    fi
+  fi
+}
+########## ^ DO NOT REMOVE ^ ##########
+
+########## v DO NOT REMOVE v ##########
+unity_prop_copy() {
+  if [ "$MAGISK" == true ]; then
+	AMLPROP="$AUDMODLIBPATH/system.prop"
+  	#AMLPROP="$MOUNTPATH/.core/props/audmodlib-props.prop"
+  	NEWDIR="$AUDMODLIBPATH"
+	#NEWDIR="$MOUNTPATH/.core/props"
+  	sed -i "s/setprop //g" $1
+  	sed -i "s/ /=/g" $1
+  else
+    AMLPROP="$SH/$AUDMODLIBID-props$EXT"
+    NEWDIR="$SH"
+  fi
+  if [ "$(sed -n '4,$p' $1)" ]; then
+  	if [ ! -f $AMLPROP ]; then
+  		mkdir -p $NEWDIR
+  		echo "#!/system/bin/sh" > $AMLPROP
+  	fi
+    OLDPROPS="$(sed -n '2,$ p' $AMLPROP)"
+    NEWPROPS="$(sed -n '4,$ p' $1)"
+    printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
+    do
+  	  PRESENT="false"
+  	  printf '%s\n' "$OLDPROPS" | {
+    	  while IFS= read -r lineold
+    	  do
+    	    if [ "$linenew" == "$lineold" ]; then
+    		  PRESENT="true"
+    	    fi
+    	  done
+    	  if [ $PRESENT == "false" ]; then
+    	    sed -i -e "\$a$linenew" $AMLPROP
+    	  fi
+       }
+    done
+  	if [ "$MAGISK" == false ]; then
+  	  chmod 0700 $AMLPROP
+  	  restorecon $AMLPROP
+  	fi
+  fi
+}
+########## ^ DO NOT REMOVE ^ ##########
+
+unity_mod_wipe() {
+  ########################################################################################
+  # Wipe before System install
+  ########################################################################################
+
+  ########## v DO NOT REMOVE v ##########
+  #### CLEANING UP ####
+  ui_print " "
+  ui_print "- Cleaning up previous installations -"
+  ########## ^ DO NOT REMOVE ^ ##########
+
+  #### v INSERT YOUR FILE REMOVALS v ####
+  app_install_logic
+
+  # REMOVE FILES
+  ui_print "   Removing files..."
+  rm -rf $SYS/app/$APP1
+  rm -rf $SYS/priv-app/$APP1
+  rm -f $SYS/addon.d/$MODID.sh
+  rm -f $SYS/app/$APP1.apk
+  rm -f $SYS/app/$APP1/$APP1.apk
+  rm -f $SYS/etc/init.d/$MODID
+  rm -f $SYS/etc/init.d/$AUDMODLIBID
+  rm -f $SYS/lib/soundfx/libjamesDSPImpulseToolbox.so
+  rm -f $SYS/lib/soundfx/libjamesdsp.so
+  rm -f $SYS/priv-app/$APP1.apk
+  rm -f $SYS/priv-app/$APP1/$APP1.apk
+  rm -f /su/su.d/$MODID.sh
+  rm -f /su/su.d/$AUDMODLIBID.sh
+  rm -f $SYS/su.d/$MODID.sh
+  rm -f $SYS/su.d/$AUDMODLIBID.sh
+  #### ^ INSERT YOUR FILE REMOVALS ^ ####
+
+  #### v INSERT YOUR REMOVE PATCH v ####
+  if [ "$MAGISK" == false ]; then
+    # REMOVE LIBRARIES & EFFECTS
+    ui_print "   Removing library & effect lines..."
+    for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+      if [ -f $CFG ]; then
+        # REMOVE EFFECTS
+        sed -i '/jamesdsp {/,/}/d' $CFG
+        # REMOVE LIBRARIES
+        sed -i '/jdsp {/,/}/d' $CFG
+      fi
+    done
+
+    for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+      if [ -f $CFG ] && [ "$(cat $CFG | grep ' proxy {#')" ]; then
+        # REMOVE LIBRARIES
+        sed -i '/proxy {/,/}/d' $CFG
+      fi
+    done
+  #### ^ INSERT YOUR REMOVE PATCH ^ ####
+
+  #### v INSERT YOUR RESTORE AND BACKUP FUNCTIONS v ####
+    # REPLACE VENDOR FILE WITH PREVIOUS BACKUP
+    if [ -f $V_CONFIG_FILE ] && [ -f $V_CONFIG_FILE.bak ]; then
+      # RESTORE BACKED UP CONFIGS
+      cp -af $V_CONFIG_FILE.bak $V_CONFIG_FILE
+    fi
+  
+    # BACKUP CONFIGS
+    ui_print "   Backing up existing audio_effects cfg files..."
+    for BACKUP in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+      if [ -f $BACKUP ]; then
+        cp -f $BACKUP $BACKUP.bak
+      fi
+    done
+  fi
+  #### ^ INSERT YOUR RESTORE AND BACKUP FUNCTIONS ^ ####
+}
+
+unity_mod_directory() {
+  ########################################################################################
+  # Make directories for unity install
+  ########################################################################################
+
+  ########## v DO NOT REMOVE v ##########
+  #### PREPARE INSTALL ####
+  ui_print " "
+  ui_print "- Preparing installation -"
+
+  # CREATING DIRECTORIES
+  ui_print "   Creating directories..."
+
+  if [ "$MAGISK" == true ]; then
+    rm -rf $MODPATH 2>/dev/null
+    mkdir -p $MODPATH
+  fi
+  ########## ^ DO NOT REMOVE ^ ##########
+
+  #### v INSERT YOUR DIRECTORY MAKING v ####
+  $MK_PRFX $UNITY$SYS/$APP1PATH$MK_SFFX
+
+  $MK_PRFX $UNITY$SYS/lib/soundfx$MK_SFFX
+  
+  if [ "$MAGISK" == false ]; then
+    sys_mk_ch $SH 0755
+    if [ -d $SYS/addon.d ]; then
+      sys_mk_ch $SYS/addon.d 0755
+    fi
+    for CFG in $CONFIG_FILE $V_CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG; do
+      if [ -f $CFG ]; then
+        sys_mk_ch ${CFG%/*} 0755
+      fi
+    done
+  fi
+  #### ^ INSERT YOUR DIRECTORY MAKING ^ ####
+}
+
+unity_mod_copy() {
+  ########################################################################################
+  # Copy files over for unity install
+  ########################################################################################
+
+  ########## v DO NOT REMOVE v ##########
+  #### INSTALL FILES ####
+  ui_print " "
+  ui_print "- Installing apps, libs, & scripts -"
+  ########## ^ DO NOT REMOVE ^ ##########
+
+  #### v INSERT YOUR FILE INSTALL v ####
+  # INSTALL SCRIPTS
+  if [ "$MAGISK" == false ]; then
+    if [ "$supersuimg" ] || [ -d /su ]; then
+	    ui_print "   Installing scripts for systemless SuperSU..."
+  	elif [ -d $SYS/su ] || [ -f $SYS/xbin/daemonsu ] || [ -f $SYS/xbin/sugote ]; then
+  	  ui_print "   Installing scripts for system SuperSU..."
+  	elif [ -f $SYS/xbin/su ]; then
+  	  if [ "$(cat $SYS/xbin/su | grep SuperSU)" ]; then
+  	    ui_print "   Installing scripts for system SuperSU..."
+  	  else
+  	    ui_print "   Installing scripts for LineageOS SU..."
+  	  fi
+    else
+      ui_print "   Installing scripts for phh's su or non root..."
+    fi
+    sys_cp_ch $INSTALLER/common/$AUDMODLIBID-service.sh $SH/$AUDMODLIBID$EXT 0700
+
+    # INSTALL ROM BACKUP SCRIPT
+    if [ -d $SYS/addon.d ]; then
+      ui_print "   Installing addon.d backup script..."
+      sys_cp_ch $INSTALLER/system/addon.d/$MODID.sh $SYS/addon.d/$MODID.sh 0644
+	else
+      ui_print "   ! Addon.d not detected. Backup script not installed..."
+    fi
+	# CREATE FILE CONTAINING LIST OF ALL INSTALLED MOD FILES
+	touch $INFO
+    echo "$SH/$AUDMODLIBID$EXT" > $INFO
+  	echo "$SH/$AUDMODLIBID-props$EXT" >> $INFO
+  fi
+  
+  # INSTALL APPS
+  ui_print "$APPTXT"
+  $CP_PRFX $INSTALLER/system/app/$APP1/$APP1.apk $UNITY$SYS/$APP1PATH/$APP1.apk$CP_SFFX
+
+  # ADD BUILDPROPS
+  ui_print "   Adding build props..."
+  unity_prop_copy $INSTALLER/common/audmodlib-props.prop
+  
+  # INSTALL LIBRARIES
+  ui_print "   Installing libraries..."
+  $CP_PRFX system/lib/libjamesDSPImpulseToolbox.so $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so$CP_SFFX
+  $CP_PRFX system/lib/soundfx/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so$CP_SFFX
+  
+  if [ "$MAGISK" == false ]; then
+	echo "$UNITY$SYS/lib/libjamesDSPImpulseToolbox.so" >> $INFO
+	echo "$UNITY$SYS/lib/soundfx/libjamesdsp.so" >> $INFO
+    sed -i 's/\/system\///g' $INFO
+  fi
+  #### ^ INSERT YOUR FILE INSTALL ^ ####
+}
+
+magisk_audmodlib() {
+  ########################################################################################
+  # Audio Modification Library / This is where the magick happens for Magisk
+  ########################################################################################
+
+  ########## v DO NOT REMOVE v ##########
+  ### CREATE AUDIO MODIFICATION LIBRARY ###
+  ui_print " "
+  ui_print "- Installing Audio Modification Library -"
+
+  ui_print "   Installing scripts for MagiskSU..."
+  mkdir -p $MOUNTPATH/.core/service.d
+  sys_cp_ch $INSTALLER/common/$AUDMODLIBID-service.sh $MOUNTPATH/.core/service.d/$AUDMODLIBID.sh 0755
+  sys_cp_ch $INSTALLER/common/$MODID-service.sh $MOUNTPATH/.core/service.d/$MODID.sh 0755
+
+  if [ -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
+    rm -rf /cache/magisk/audmodlib
+  fi
+  
+  if [ ! -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
+    SOURCEDIR=""
+  elif [ -d /cache/magisk/audmodlib ]; then
+    SOURCEDIR=/cache/magisk/audmodlib
+  elif [ -d $AUDMODLIBPATH ]; then
+    SOURCEDIR=$AUDMODLIBPATH
+  elif [ -d /magisk/audmodlib ]; then
+    SOURCEDIR=/magisk/audmodlib
+  fi
+
+  magisk_install
+
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
+    if [ -f $CFG ]; then
+      mkdir -p /cache/magisk/audmodlib${CFG%/*}
+    fi
+  done
+
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
+    if [ -f $CFG ]; then
+	  if [ ! -f $CFG.bak ]; then
+        cp -af $CFG /cache/magisk/audmodlib$CFG.bak
+      else
+        cp -af $CFG.bak /cache/magisk/audmodlib$CFG.bak
+      fi
+	fi
+  done
+
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
+    if [ -f $CFG ]; then
+      cp -af $SOURCEDIR$CFG /cache/magisk/audmodlib$CFG
+    fi
+  done
+  
+  set_perm_recursive  /cache/magisk/audmodlib  0  0  0755  0644
+
+  if [ -f $V_CONFIG_FILE ]; then
+    cp -af /cache/magisk/audmodlib$CONFIG_FILE /cache/magisk/audmodlib$V_CONFIG_FILE
+  fi
+
+  mkdir -p $AUDMODLIBPATH
+
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
+    if [ -f $CFG ]; then
+      mkdir -p $AUDMODLIBPATH${CFG%/*}
+    fi
+  done
+
+  unity_mod_patch
+  
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+    if [ -f $CFG ] && [ ! "$(cat /cache/magisk/audmodlib$CFG | grep ' proxy {')" ]; then
+      sed -i 's/^libraries {/libraries {\n  proxy {#\n    path \/system\/lib\/soundfx\/libeffectproxy.so\n  }/g' /cache/magisk/audmodlib$CFG
+    fi
+  done
+  
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
+    if [ -f $CFG.bak ]; then
+      cp -af /cache/magisk/audmodlib$CFG.bak $AUDMODLIBPATH$CFG.bak
+    fi
+  done
+  
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
+    if [ -f $CFG ]; then
+      cp -af /cache/magisk/audmodlib$CFG $AUDMODLIBPATH$CFG
+    fi
+  done
+  
+  # COPY OVER MAIN AUDIO_EFFECTS CFG FILE TO VENDOR FILE
+  if [ -f $V_CONFIG_FILE ]; then
+    cp -af /cache/magisk/audmodlib$CONFIG_FILE /cache/magisk/audmodlib$V_CONFIG_FILE
+  fi
+  
+  set_perm_recursive  $AUDMODLIBPATH  0  0  0755  0644
+
+  ui_print "   ! AudModLib framework by ahrion @ XDA !"
+  ########## ^ DO NOT REMOVE ^ ##########
+}
+
+unity_mod_patch() {
+  ########################################################################################
+  # Audio Modification Library file patcher for unity install
+  ########################################################################################
+
+  ########## v DO NOT REMOVE v ##########
+  #### PATCHING FILES ####
+  ui_print "   Patching necessary cfg files"
+  ########## ^ DO NOT REMOVE ^ ##########
+
+  #### v INSERT YOUR FILE PATCHES v ####
+  # REMOVE LIBRARIES & EFFECTS
+  ui_print "    Removing library & effect lines..."
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+    if [ -f $CFG ]; then
+      # REMOVE EFFECTS
+      sed -i '/jamesdsp {/,/}/d' $UNITYPATCH$CFG
+      # REMOVE LIBRARIES
+      sed -i '/jdsp {/,/}/d' $UNITYPATCH$CFG
+    fi
+  done
+
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+    if [ -f $CFG ] && [ "$(cat $CFG | grep ' proxy {#')" ]; then
+      # REMOVE LIBRARIES
+      sed -i '/proxy {/,/}/d' $UNITYPATCH$CFG
+    fi
+  done
+
+  # ADD LIBRARIES & EFFECTS
+  ui_print "    Patching existing audio_effects files..."
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+    if [ -f $CFG ]; then
+      # ADD EFFECTS
+      sed -i 's/^effects {/effects {\n  jamesdsp {\n    library jdsp\n    uuid f27317f4-c984-4de6-9a90-545759495bf2\n  }/g' $UNITYPATCH$CFG
+      # ADD LIBRARIES
+      sed -i 's/^libraries {/libraries {\n  jdsp {\n    path \/system\/lib\/soundfx\/libjamesdsp.so\n  }/g' $UNITYPATCH$CFG
+    fi
+  done
+
+  if [ "$MAGISK" == false ]; then
+    for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+      if [ -f $CFG ] && [ ! "$(cat $CFG | grep ' proxy {')" ]; then
+        sed -i 's/^libraries {/libraries {\n  proxy {#\n    path \/system\/lib\/soundfx\/libeffectproxy.so\n  }/g' $CFG
+      fi
+    done
+
+    # COPY OVER MAIN AUDIO_EFFECTS CFG FILE TO VENDOR FILE
+    if [ -f $V_CONFIG_FILE ]; then
+      cp -af $CONFIG_FILE $V_CONFIG_FILE
+    fi
+  fi
+  #### ^ INSERT YOUR FILE PATCHES ^ ####
+}
+
+unity_uninstall() {
+  ########################################################################################
+  # Uninstall for Magisk install
+  ########################################################################################
+
+  ########## v DO NOT REMOVE v ##########
+  #### CLEANING UP ####
+  ui_print " "
+  ui_print "- Cleaning up previous installations -"
+
+  # REMOVE PROPS
+  ui_print "   Removing build props..."
+  unity_prop_removal $INSTALLER/common/$AUDMODLIBID-props.prop
+
+  # REMOVE FILES
+  ui_print "   Removing files..."
+  if [ "$MAGISK" == true ]; then
+    ui_print "   Magisk install detected, removing files..."
+    rm -rf $MODPATH
+    rm -rf /magisk/$MODID
+  fi
+  ########## ^ DO NOT REMOVE ^ ##########
+
+  #### v INSERT YOUR FILE REMOVALS v ####
+  if [ "$MAGISK" == true ]; then
+    rm -f /magisk/.core/service.d/$MODID.sh
+  elif [ "$MAGISK" == false ]; then
+    if [ -f $INFO ]; then
+      ui_print "   System install detected, removing files..."
+      sed -i '1,2d' $INFO
+    	cat $INFO | while read LINE; do
+        if [ "$(dirname $LINE)" == "/su/su.d" ]; then
+         	sys_rm_ch $LINE
+        else
+    		  sys_rm_ch $SYS/$LINE
+        fi
+    	done
+    	rm -f $INFO
+      for DIR in $SYS/app/$APP1 $SYS/priv-app/$APP1; do
+    	  if [ -d "$DIR" ]; then
+      		if [ "$(ls -A "$DIR")" == "" ]; then
+      		  rm -rf $DIR
+      		fi
+    	  fi
+    	done
+    else
+      ui_print "   ! Mod not detected. Removing scripts..."
+    fi
+  fi
+
+  rm -f $SYS/addon.d/$MODID.sh
+  rm -f $SYS/etc/init.d/$MODID
+  rm -f /su/su.d/$MODID.sh
+  rm -f $SYS/su.d/$MODID.sh
+  #### ^ INSERT YOUR FILE REMOVALS ^ ####
+  
+  #### v INSERT YOUR REMOVE PATCH OR RESTORE v ####
+  # RESTORE CONFIGS
+  ui_print "   Restoring necessary cfg files"
+
+  # REMOVE LIBRARIES & EFFECTS
+  ui_print "    Removing library & effect lines..."
+  if [ "$MAGISK" == true ]; then
+    if [ -d $AUDMODLIBPATH ] || [ -d /magisk/audmodlib ]; then
+      for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+        if [ -f $CFG ]; then
+          # REMOVE EFFECTS
+          sed -i '/jamesdsp {/,/}/d' $UNITYPATCH$CFG
+          # REMOVE LIBRARIES
+          sed -i '/jdsp {/,/}/d' $UNITYPATCH$CFG
+        fi
+      done
+    fi
+  elif [ "$MAGISK" == false ]; then
+    for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+      if [ -f $CFG ]; then
+        # REMOVE EFFECTS
+        sed -i '/jamesdsp {/,/}/d' $UNITYPATCH$CFG
+        # REMOVE LIBRARIES
+        sed -i '/jdsp {/,/}/d' $UNITYPATCH$CFG
+      fi
+    done
+  fi
+  
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+    if [ -f $CFG ] && [ "$(cat $CFG | grep ' proxy {#')" ]; then
+      # REMOVE LIBRARIES
+      sed -i '/proxy {/,/}/d' $UNITYPATCH$CFG
+    fi
+  done
+  #### ^ INSERT YOUR REMOVE PATCH OR RESTORE ^ ####
+}
+
+##########################################################################################
+# Install
+##########################################################################################
+
+# Extract mod files
+unzip -o "$ZIP" 'system/*' -d $INSTALLER 2>/dev/null
+
+# GET INSTALL/UNINSTALL ACTION FROM ZIP NAME
+case $(basename $ZIP) in
+  *uninstall*|*Uninstall*|*UNINSTALL*) ACTION=Uninstall;;
+  *) ACTION=Install;;
+esac;
+
+if is_mounted /data; then
+  if [ ! -f "/data/magisk.img" ]; then
+    # Prepare (Un)Install
+    system_install
+    script_install_logic
+    app_install_logic
+	
+	if [ "$ACTION" == "Install" ]; then
+      ui_print " "
+      ui_print "   ! Magisk is not installed!"
+      ui_print "    ! Installing on system!"
+	  
+      # Remove props
+      ui_print " "
+      ui_print "- Removing obsolete props-"
+      unity_prop_removal $INSTALLER/common/$AUDMODLIBID-props-remove.prop
+	  
+      # Wipe files
+      unity_mod_wipe
+	  
+      # Create mod paths
+      unity_mod_directory
+	  
+      # Copy files
+      unity_mod_copy
+	  
+      # Patch files
+      unity_mod_patch
+	  
+      #### COMPLETING INSTALL ####
+      ui_print " "
+      ui_print "    --------- INSTALLATION SUCCESSFUL ---------"
+      ui_print " "
+      ui_print "Installer brought to you by ahrion and zackptg5 @ XDA"
+      ui_print " "
+      exit 0;
+    else
+      ui_print " "
+      ui_print "   ! Magisk is not installed!"
+      ui_print "    ! Uninstalling on system!"
+	  
+      # Uninstall
+      unity_uninstall
+	  
+      #### COMPLETING UNINSTALL ####
+      ui_print " "
+      ui_print "    --------- RESTORATION SUCCESSFUL ---------"
+      ui_print " "
+      ui_print "Uninstaller brought to you by ahrion and zackptg5 @ XDA"
+      ui_print " "
+      exit 0;
+    fi
+  fi
+else
+  ui_print " "
+  ui_print "***********************************"
+  ui_print "*      !! Data unavailible !!     *"
+  ui_print "* Magisk detection is impossible  *"
+  ui_print "* Installation will still proceed *"
+  ui_print "*  But please make sure you have  *"
+  ui_print "*        Magisk installed!!       *"
+  ui_print "*         !!Using Cache!!         *"  
+  ui_print "***********************************"
+  ui_print " "
+fi
+
+# MAGISKBIN must exist, binaries and utility functions are placed there
+[ -f $MAGISKBIN/magisk -a -f $MAGISKBIN/busybox -a -f $MAGISKBIN/util_functions.sh ] || require_new_magisk
+
+# We need busybox/binaries to be setup
+$BOOTMODE && boot_actions || recovery_actions
+
+request_zip_size_check "$ZIP"
+if [ -f "$IMG" ]; then
+  ui_print "   $IMG detected!"
+  image_size_check $IMG
+  if [ "$reqSizeM" -gt "$curFreeM" ]; then
+    newSizeM=$(((reqSizeM + curUsedM) / 32 * 32 + 64))
+    ui_print "    Resizing $IMG to ${newSizeM}M"
+    $MAGISKBIN/magisk --resizeimg $IMG $newSizeM
+  fi
+else
+  newSizeM=$((reqSizeM / 32 * 32 + 64));
+  ui_print "   Creating $IMG with size ${newSizeM}M"
+  $MAGISKBIN/magisk --createimg $IMG $newSizeM
+fi
+
+ui_print "    Mounting $IMG to $MOUNTPATH"
+MAGISKLOOP=`$MAGISKBIN/magisk --mountimg $IMG $MOUNTPATH`
+is_mounted $MOUNTPATH || abort"     $IMG mount failed..."
+
+# Prepare (Un)install
+magisk_install
+app_install_logic
+  
+if [ "$ACTION" == "Install" ]; then   
+  # Remove props
+  unity_prop_removal $INSTALLER/common/$AUDMODLIBID-props-remove.prop
+
+  # Wipe files
+  unity_mod_wipe
+
+  # Create mod paths
+  unity_mod_directory
+
+  # Copy files
+  unity_mod_copy
+
+  # Patch files
+  magisk_audmodlib
+
+  # Handle replace folders
+  for TARGET in $REPLACE; do
+    mktouch $MODPATH$TARGET/.replace
+	mktouch $AUDMODLIBPATH$TARGET/.replace
+  done
+
+  # Auto Mount
+  $AUTOMOUNT && touch $MODPATH/auto_mount
+  $AUTOMOUNT && touch $AUDMODLIBPATH/auto_mount
+
+  # prop files
+  $PROPFILE && cp -af $INSTALLER/common/system.prop $MODPATH/system.prop
+
+  # Module info
+  cp -af $INSTALLER/module.prop $MODPATH/module.prop
+  cp -af $INSTALLER/common/audmodlibmodule.prop $AUDMODLIBPATH/module.prop
+  if $BOOTMODE; then
+    # Update info for Magisk Manager
+    mktouch /magisk/$MODID/update
+    mktouch /magisk/$AUDMODLIBID/update
+    cp -af $INSTALLER/module.prop /magisk/$MODID/module.prop
+    cp -af $INSTALLER/common/audmodlibmodule.prop /magisk/$AUDMODLIBID/module.prop
+  fi
+
+  # post-fs-data mode scripts
+  $POSTFSDATA && cp -af $INSTALLER/common/post-fs-data.sh $MODPATH/post-fs-data.sh
+
+  # service mode scripts
+  $LATESTARTSERVICE && cp -af $INSTALLER/common/service.sh $MODPATH/service.sh
+
+  #### COMPLETING INSTALL ####
+  ui_print " "
+  ui_print "- Completing install -"
+else
+  # Uninstall
+  unity_uninstall
+
+  #### COMPLETING UNINSTALL ####
+  ui_print " "
+  ui_print "- Completing uninstall -"
+fi
+
+ui_print "   Setting permissions..."
+set_permissions
+
+##########################################################################################
+# Finalizing
+##########################################################################################
+
+$MAGISKBIN/magisk --umountimg $MOUNTPATH $MAGISKLOOP
+rmdir $MOUNTPATH
+
+# Shrink the image if possible
+image_size_check $IMG
+newSizeM=$((curUsedM / 32 * 32 + 64))
+if [ $curSizeM -gt $newSizeM ]; then
+  ui_print "- Shrinking $IMG to ${newSizeM}M"
+  $MAGISKBIN/magisk --resizeimg $IMG $newSizeM
+fi
+
+if ! $BOOTMODE; then
+  if [ "$supersuimg" ] || [ -d /su ]; then
+    umount /su
+  fi
+fi
+
+$BOOTMODE || recovery_cleanup
+rm -rf $TMPDIR
+
+if [ $isABDevice == true ]; then
+  mount -o ro /system 2>/dev/null
+  mount -o ro /vendor 2>/dev/null
+  mount -o ro,remount /system 2>/dev/null
+  mount -o ro,remount /vendor 2>/dev/null
+fi
+
+ui_print " "
+ui_print "    --------- INSTALLATION SUCCESSFUL ---------"
+
+ui_print " "
+ui_print "Installer brought to you by ahrion and zackptg5 @ XDA"
+
+# Please leave this message in your flashable zip for credits :)
+ui_print " "
+ui_print "    *******************************************"
+ui_print "    *      Powered by Magisk (@topjohnwu)     *"
+ui_print "    *******************************************"
+ui_print " "
+
+exit 0

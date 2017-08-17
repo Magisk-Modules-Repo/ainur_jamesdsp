@@ -1,0 +1,9 @@
+id=JamesDSPManager
+name=JamesDSPManager
+version=v1.0 (08/11/2017)
+versionCode=1
+author=ahrion
+description=JamesDSPManager is an reformed audio engine based of AOSP source code with enhanced features and tuning
+support=https://forum.xda-developers.com/apps/magisk/module-viper4android-fx-2-5-0-5-t3577058
+donate=https://github.com/therealahrion/ViPER4Android-FX
+template=5
