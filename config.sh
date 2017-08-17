@@ -25,7 +25,7 @@
 
 # This will be the folder name under /magisk
 # This should also be the same as the id in your module.prop to prevent confusion
-MODID=ainur_JamesDSPManager
+MODID=ainur_jamesdsp
 AUDMODLIBID=audmodlib
 
 # Set to true if you need to enable Magic Mount
