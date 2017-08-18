@@ -37,6 +37,17 @@ else
   SYS=/system
 fi
 
+# GET INSTALL/UNINSTALL ACTION FROM ZIP NAME
+case $(basename $ZIP) in
+  *uninstall*|*Uninstall*|*UNINSTALL*) ACTION=Uninstall;;
+  *) ACTION=Install;;
+esac;
+# GET SYSTEM OVERRIDE FROM ZIP NAME
+case $(basename $ZIP) in
+  *system*|*System*|*SYSTEM*) SYSOVER=true;;
+  *) SYSOVER=false;;
+esac;
+
 # Mount /data and /cache to access MAGISKBIN
 mount /data 2>/dev/null
 mount /cache 2>/dev/null
@@ -147,6 +158,9 @@ if [ $isABDevice == true ]; then
   ui_print "   ! A/B OTA device detected!"
   WRITE=rw
   SPACE="  "
+elif [ "$SYSOVER" == true ]; then
+  WRITE=rw
+  ui_print "   ! Warning: Forcing a system $ACTION!"
 elif [ -f /data/magisk.img ] || [ -f /cache/magisk.img ] || [ -d /magisk ]; then
   WRITE=ro
 elif [ ! -f /data/magisk.img ] || [ ! -f /cache/magisk.img ] || [ ! -d /magisk ]; then
@@ -309,14 +323,13 @@ script_install_logic() {
   ########## ^ DO NOT REMOVE ^ ##########
 }
 
-
 unity_prop_removal() {
   ########################################################################################
   # Logic for unity prop removals
   ########################################################################################
 
   ########## v DO NOT REMOVE v ##########
-  if [ "$MAGISK" == true ]; then
+  if [ "$MAGISK" == true ] || [ "$SYSOVER" == true ]; then
 		rm -f $SYS/etc/init.d/$AUDMODLIBID-props
 		rm -f /su/su.d/$AUDMODLIBID-props.sh
 		rm -f $SYS/su.d/$AUDMODLIBID-props.sh
@@ -352,7 +365,7 @@ unity_prop_copy() {
   ########################################################################################
 
   ########## v DO NOT REMOVE v ##########
-  if [ "$MAGISK" == true ]; then
+  if [ "$MAGISK" == true ] || [ "$SYSOVER" == true ]; then
 	AMLPROP="$AUDMODLIBPATH/system.prop"
   	#AMLPROP="$MOUNTPATH/.core/props/audmodlib-props.prop"
   	NEWDIR="$AUDMODLIBPATH"
@@ -403,9 +416,8 @@ unity_mod_wipe() {
   ui_print " "
   ui_print "- Cleaning up previous installations -"
   ########## ^ DO NOT REMOVE ^ ##########
-
+  
   #### v INSERT YOUR FILE REMOVALS v ####
-  app_install_logic
 
   # REMOVE FILES
   ui_print "   Removing files..."
@@ -478,9 +490,10 @@ unity_mod_directory() {
   # CREATING DIRECTORIES
   ui_print "   Creating directories..."
 
-  if [ "$MAGISK" == true ]; then
+  if [ "$MAGISK" == true ] || [ "$SYSOVER" == true ]; then
     rm -rf $MODPATH 2>/dev/null
     mkdir -p $MODPATH
+	mkdir -p $AUDMODLIBPATH
   fi
   ########## ^ DO NOT REMOVE ^ ##########
 
@@ -517,7 +530,9 @@ unity_mod_copy() {
   #### v INSERT YOUR FILE INSTALL v ####
   # INSTALL SCRIPTS
   if [ "$MAGISK" == false ]; then
-    if [ "$supersuimg" ] || [ -d /su ]; then
+    if [ "$SYSOVER" == true ]; then
+		ui_print "   Installing scripts for Magisk SU..."
+	elif [ "$supersuimg" ] || [ -d /su ]; then
 	    ui_print "   Installing scripts for systemless SuperSU..."
   	elif [ -d $SYS/su ] || [ -f $SYS/xbin/daemonsu ] || [ -f $SYS/xbin/sugote ]; then
   	  ui_print "   Installing scripts for system SuperSU..."
@@ -530,7 +545,21 @@ unity_mod_copy() {
     else
       ui_print "   Installing scripts for phh's su or non root..."
     fi
-    sys_cp_ch $INSTALLER/common/$AUDMODLIBID-service.sh $SH/$AUDMODLIBID$EXT 0700
+	
+	# CREATE FILE CONTAINING LIST OF ALL INSTALLED MOD FILES
+  	touch $INFO
+
+    # COPY MODULE.PROP FILE FOR VERSION CHECKING
+    $CP_PRFX $INSTALLER/module.prop $MOD_VER
+	
+	if [ "$SYSOVER" == false ]; then
+	  sys_cp_ch $INSTALLER/common/$AUDMODLIBID-service.sh $SH/$AUDMODLIBID$EXT 0700
+	  echo "$SH/$AUDMODLIBID$EXT" > $INFO
+      echo "$SH/$AUDMODLIBID-props$EXT" >> $INFO
+	else
+	  mkdir -p $MOUNTPATH/.core/service.d
+	  sys_cp_ch $INSTALLER/common/$AUDMODLIBID-service.sh $MOUNTPATH/.core/service.d/$AUDMODLIBID.sh 0755
+	fi
 
     # INSTALL ROM BACKUP SCRIPT
     if [ -d $SYS/addon.d ]; then
@@ -539,21 +568,15 @@ unity_mod_copy() {
 	else
       ui_print "   ! Addon.d not detected. Backup script not installed..."
     fi
-	# CREATE FILE CONTAINING LIST OF ALL INSTALLED MOD FILES
-	touch $INFO
-  echo "$SH/$AUDMODLIBID$EXT" > $INFO
-  echo "$SH/$AUDMODLIBID-props$EXT" >> $INFO
-  # COPY MODULE>PROP FILE FOR VERSION CHECKING
-  $CP_PRFX $INSTALLER/module.prop $MOD_VER_PATH/$MODID-module.prop
   fi
-
-  # ADD BUILDPROPS
-  ui_print "   Adding build props..."
-  unity_prop_copy $INSTALLER/common/audmodlib-props.prop
 
   # INSTALL APPS
   ui_print "$APPTXT"
   $CP_PRFX $INSTALLER/system/app/$APP1/$APP1.apk $UNITY$SYS/$APP1PATH/$APP1.apk$CP_SFFX
+
+  # ADD BUILDPROPS
+  ui_print "   Adding build props..."
+  unity_prop_copy $INSTALLER/common/audmodlib-props.prop
 
   # INSTALL LIBRARIES
   ui_print "   Installing libraries..."
@@ -632,8 +655,6 @@ magisk_audmodlib() {
   if [ -f $V_CONFIG_FILE ]; then
     cp -af /cache/magisk/audmodlib$CONFIG_FILE /cache/magisk/audmodlib$V_CONFIG_FILE
   fi
-
-  mkdir -p $AUDMODLIBPATH
 
   for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
     if [ -f $CFG ]; then
@@ -743,7 +764,7 @@ unity_uninstall() {
 
   # REMOVE FILES
   ui_print "   Removing files..."
-  if [ "$MAGISK" == true ]; then
+  if [ "$MAGISK" == true ] || [ "$SYSOVER" == true ]; then
     ui_print "   Magisk install detected, removing files..."
     rm -rf $MODPATH
     rm -rf /magisk/$MODID
@@ -756,7 +777,9 @@ unity_uninstall() {
   elif [ "$MAGISK" == false ]; then
     if [ -f $INFO ]; then
       ui_print "   System install detected, removing files..."
-      sed -i '1,2d' $INFO
+	  if [ "$SYSOVER" == false ]; then 
+        sed -i '1,2d' $INFO
+	  fi
     	cat $INFO | while read LINE; do
         if [ "$(dirname $LINE)" == "/su/su.d" ]; then
          	sys_rm_ch $LINE
@@ -826,12 +849,6 @@ unity_uninstall() {
 
 # Extract mod files
 unzip -o "$ZIP" 'system/*' -d $INSTALLER 2>/dev/null
-
-# GET INSTALL/UNINSTALL ACTION FROM ZIP NAME
-case $(basename $ZIP) in
-  *uninstall*|*Uninstall*|*UNINSTALL*) ACTION=Uninstall;;
-  *) ACTION=Install;;
-esac;
 
 if is_mounted /data; then
   if [ ! -f "/data/magisk.img" ]; then
@@ -928,13 +945,18 @@ MAGISKLOOP=`$MAGISKBIN/magisk --mountimg $IMG $MOUNTPATH`
 is_mounted $MOUNTPATH || abort"     $IMG mount failed..."
 
 # Prepare (Un)install
-magisk_install
+if [ "$SYSOVER" == true ]; then
+  system_install
+else
+  magisk_install
+fi
 app_install_logic
 
 # Determine if mod is already installed. If same version is installed, uninstall
 mod_exist
 
 if [ "$ACTION" == "Install" ]; then
+  
   # Remove props
   unity_prop_removal $INSTALLER/common/$AUDMODLIBID-props-remove.prop
 
@@ -947,18 +969,27 @@ if [ "$ACTION" == "Install" ]; then
   # Copy files
   unity_mod_copy
 
-  # Patch files
-  magisk_audmodlib
+  if [ "$SYSOVER" == true ]; then
+  
+	# Patch files
+	unity_mod_patch
+	
+  else
+  
+    # Patch files
+    magisk_audmodlib
 
-  # Handle replace folders
-  for TARGET in $REPLACE; do
-    mktouch $MODPATH$TARGET/.replace
-	mktouch $AUDMODLIBPATH$TARGET/.replace
-  done
+    # Handle replace folders
+    for TARGET in $REPLACE; do
+      mktouch $MODPATH$TARGET/.replace
+	  mktouch $AUDMODLIBPATH$TARGET/.replace
+    done
 
-  # Auto Mount
-  $AUTOMOUNT && touch $MODPATH/auto_mount
-  $AUTOMOUNT && touch $AUDMODLIBPATH/auto_mount
+    # Auto Mount
+    $AUTOMOUNT && touch $MODPATH/auto_mount
+    $AUTOMOUNT && touch $AUDMODLIBPATH/auto_mount
+
+  fi
 
   # prop files
   $PROPFILE && cp -af $INSTALLER/common/system.prop $MODPATH/system.prop
@@ -983,7 +1014,10 @@ if [ "$ACTION" == "Install" ]; then
   #### COMPLETING INSTALL ####
   ui_print " "
   ui_print "- Completing install -"
+  ui_print "   Setting permissions..."
+  set_permissions
 else
+  
   # Uninstall
   unity_uninstall
 
@@ -991,9 +1025,6 @@ else
   ui_print " "
   ui_print "- Completing uninstall -"
 fi
-
-ui_print "   Setting permissions..."
-set_permissions
 
 ##########################################################################################
 # Finalizing
