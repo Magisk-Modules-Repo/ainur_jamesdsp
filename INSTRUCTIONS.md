@@ -15,7 +15,6 @@ Instructions are contained in each file
 11. If your files include any apps/apks, follow the instructions in the unity-uservariables.sh
 12. If adding any custom variables, add them to the unity-uservariables.sh
 13. Rename the .sh file in common folder to your MODID-service and modify it as instructed in the file
-14. Rename the system/addon.d file to your MODID
 
 ________________________________________________________________________________________________________________________________________________________________________
 
@@ -84,4 +83,4 @@ TIMEOFEXEC VALUES - when the customrules file will execute in the (un)installer 
 6=unity_mod_patch
 7=unity_uninstall
 
-*HINT: unity_prop_copy is called from the unity_mod_copy function. So if you have props you want set under certain conditions, have that customrules' TIMEOFEXEC=5
+*HINT: unity_prop_copy is called from the unity_mod_copy function. So if you have props you want set under certain conditions, have that customrule's TIMEOFEXEC=5

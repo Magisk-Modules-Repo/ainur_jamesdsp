@@ -6,7 +6,7 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 
 ## Compatibility
 * Android Jellybean+
-* Magisk install (MagiskSU/SuperSU)
+* Magisk install (MagiskSU)
 * Pixel support
 * System install
 * Works with [AM3D Zirene Sound](https://forum.xda-developers.com/android/apps-games/mod-zirene-sound-am3d-t3396698/post71580634#post71580634}, [Dolby Atmos](https://github.com/therealahrion/Dolby-Atmos-ZTE-Axon-7), & ViPER4Android XHiFi
