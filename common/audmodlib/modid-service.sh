@@ -3,7 +3,7 @@
 # More info in the main Magisk thread
 
 #### v INSERT YOUR CONFIG.SH MODID v ####
-MODID=ainur_jamesdsp
+MODID=udbr
 #### ^ INSERT YOUR CONFIG.SH MODID ^ ####
 
 ########## v DO NOT REMOVE v ##########
@@ -61,17 +61,7 @@ if [ ! -d /magisk/$MODID ]; then
   V_MIX_PATH=$VEN/etc/mixer_paths.xml
   ########## ^ DO NOT REMOVE ^ ##########
 
-  #### v INSERT YOUR REMOVE PATCH OR RESTORE v ####
-  # REMOVE LIBRARIES & EFFECTS
-  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
-    if [ -f $CFG ]; then
-      # REMOVE EFFECTS
-      sed -i '/jamesdsp {/,/}/d' $AMLPATH$CFG
-      # REMOVE LIBRARIES
-      sed -i '/jdsp {/,/}/d' $AMLPATH$CFG
-    fi
-  done
-  #### ^ INSERT YOUR REMOVE PATCH OR RESTORE ^ ####
+  <PATCHES>
 
   rm -f /magisk/.core/service.d/$MODID.sh
 fi
