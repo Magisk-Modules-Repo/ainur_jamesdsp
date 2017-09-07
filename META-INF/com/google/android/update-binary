@@ -243,8 +243,47 @@ api_level_arch_detect
 ##########################################################################################
 
 ### FILE LOCATIONS ###
+# USER INPUT FILES
+INPUT_FILE_WIPE=$INSTALLER/common/unity-files-wipe.sh
+INPUT_PATCHES=$INSTALLER/common/unity-patches.sh
+INPUT_PATCHES_REM=$INSTALLER/common/unity-patches-remove.sh
+INPUT_PATCHES_WIPE=$INSTALLER/common/unity-patches-wipe.sh
+INPUT_PROPS=$INSTALLER/common/unity-props.prop
+INPUT_PROPS_REM=$INSTALLER/common/unity-props-remove.prop
+INPUT_VAR=$INSTALLER/common/unity-uservariables.sh
+INPUT_RULES=$INSTALLER/common/unity-customrules
+INPUT_SCRIPT=$INSTALLER/common/unity-script.sh
+
+# REMOVE COMMENTS FROM USER INPUT FILES AND ADD PROPER VARIABLES
+for FIL in $INPUT_FILE_WIPE $INPUT_PATCHES $INPUT_PATCHES_REM $INPUT_PATCHES_WIPE $INPUT_PROPS $INPUT_PROPS_REM $INPUT_VAR $INPUT_RULES $INPUT_SCRIPT; do
+  if [ "$FIL" == "$INPUT_RULES" ]; then
+    NUM=1; while true; do
+      if [ -f $FIL$NUM.sh ]; then
+        sed -i '/^#/ d' $FIL$NUM.sh
+        sed -i 's/$SYS\/$VEN/$VEN/g' $FIL$NUM.sh
+      else
+        NUMOFCUSTRULES=$(($NUM-1))
+        break
+      fi
+      NUM=$((NUM+1))
+    done
+  else
+    if [ -f $FIL ]; then
+	  sed -i '/^#/ d' $FIL
+      sed -i 's/$SYS\/$VEN/$VEN/g' $FIL
+    else
+      ui_print "   !$FIL missing!"
+      ui_print "   !Copy it back to above and try again!"
+      exit 1
+    fi
+  fi
+done
+
+# IMPORT USER VARIABLES
+source $INPUT_VAR
+
 # SET MODID, MODPATH, AND AMLPATH
-MODID=`grep_prop id $INSTALLER/module.prop`
+test -z $MODID && MODID=`grep_prop id $INSTALLER/module.prop`
 MODPATH=$MOUNTPATH/$MODID
 $BOOTMODE && AMLPATH=/magisk/$AMLID || AMLPATH=$MOUNTPATH/$AMLID
 
@@ -277,47 +316,9 @@ if [ -d $SYS/addon.d ]; then
 else
   INFO=$SYS/etc/$MODID-files
 fi
-# USER INPUT FILES
-INPUT_FILE_WIPE=$INSTALLER/common/unity-files-wipe.sh
-INPUT_PATCHES=$INSTALLER/common/unity-patches.sh
-INPUT_PATCHES_REM=$INSTALLER/common/unity-patches-remove.sh
-INPUT_PATCHES_WIPE=$INSTALLER/common/unity-patches-wipe.sh
-INPUT_PROPS=$INSTALLER/common/unity-props.prop
-INPUT_PROPS_REM=$INSTALLER/common/unity-props-remove.prop
-INPUT_VAR=$INSTALLER/common/unity-uservariables.sh
-INPUT_RULES=$INSTALLER/common/unity-customrules
-INPUT_SCRIPT=$INSTALLER/common/unity-script.sh
 # TEMPORARY VARIABLES
 TFILES=$INSTALLER/tfiles
 TVFILES=$INSTALLER/tvfiles
-
-# REMOVE COMMENTS FROM USER INPUT FILES AND ADD PROPER VARIABLES
-for FIL in $INPUT_FILE_WIPE $INPUT_PATCHES $INPUT_PATCHES_REM $INPUT_PATCHES_WIPE $INPUT_PROPS $INPUT_PROPS_REM $INPUT_VAR $INPUT_RULES $INPUT_SCRIPT; do
-  if [ "$FIL" == "$INPUT_RULES" ]; then
-    NUM=1; while true; do
-      if [ -f $FIL$NUM.sh ]; then
-        sed -i '/^#/ d' $FIL$NUM.sh
-        sed -i 's/$SYS\/$VEN/$VEN/g' $FIL$NUM.sh
-      else
-        NUMOFCUSTRULES=$(($NUM-1))
-        break
-      fi
-      NUM=$((NUM+1))
-    done
-  else
-    if [ -f $FIL ]; then
-	  sed -i '/^#/ d' $FIL
-      sed -i 's/$SYS\/$VEN/$VEN/g' $FIL
-    else
-      ui_print "   !$FIL missing!"
-      ui_print "   !Copy it back to above and try again!"
-      exit 1
-    fi
-  fi
-done
-
-# IMPORT USER VARIABLES
-source $INPUT_VAR
 
 if [ "$MODID" != "$AMLID" ]; then
   # RENAME MODID-SERVICE SCRIPT
