@@ -7,15 +7,14 @@
 # Do not remove last 3 lines (the if statement). Add any files added in custom rules before the sed statement and uncomment the whole thing (ex: echo "$UNITY$SYS/lib/soundfx/libv4a_fx_ics.so" >> $INFO)
 # ^ DO NOT MODIFY ^
 TIMEOFEXEC=3
-APP1=JamesDSPManager
 if [ "$ABI" == "arm" ]; then
   ui_print "    Installing libs for arm/arm64 device"
   $CP_PRFX $INSTALLER/custom/lib/arm/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so$CP_SFFX
-  unzip -pq $INSTALLER/system/app/$APP1/$APP1.apk lib/armeabi-v7a/libjamesDSPImpulseToolbox.so > $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so
+  unzip -pq $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk lib/armeabi-v7a/libjamesDSPImpulseToolbox.so > $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so
 else
   ui_print "    Installing libs for x86 device"
   $CP_PRFX $INSTALLER/custom/lib/x86/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so$CP_SFFX
-  unzip -pq $INSTALLER/system/app/$APP1/$APP1.apk lib/x86/libjamesDSPImpulseToolbox.so > $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so
+  unzip -pq $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk lib/x86/libjamesDSPImpulseToolbox.so > $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so
 fi
 if [ "$MAGISK" == false ]; then
 	echo "$UNITY$SYS/lib/soundfx/libjamesDSPImpulseToolbox.so" >> $INFO
