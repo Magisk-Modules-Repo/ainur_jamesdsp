@@ -5,8 +5,10 @@ LOG_FILE=/cache/audmodlib-service.log
 
 if [ -f /data/magisk.img ] || [ -f /cache/magisk.img ] || [ -d /magisk ] && [ -d magisk/audmodlib/system ]; then
   AMLPATH=/magisk/audmodlib
+  MAGISK=true
 else
   AMLPATH=""
+  MAGISK=false
 fi
 
 test -f "/magisk/audmodlib/update" && rm -f /magisk/audmodlib/update

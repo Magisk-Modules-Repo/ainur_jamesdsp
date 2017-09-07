@@ -73,6 +73,7 @@ RMFOL_PRFX -> Contains the proper rm command for folders regardless of install m
 RMFOL_SFFX -> Contains proper suffix (.replace for magisk installs) for rm -r command regardless of install method. Always put this at end of any rm -r command
 UNITY -> Conatins proper location for mod regardless of install method (MODPATH for magisk installs)
 AMLPATH -> The destination path to aml files (see the AUDMODLIB variables above)
+MAGISK -> true if magisk install, false otherwise. Useful for unity-scripts if you want parts to only run with/without magisk installs
 
 **These are set dynamically based on device some examples of use:
 $CP_PRFX $INSTALLER/system/lib/example.so $UNITY$SYS/lib/example.so$CP_SFFX

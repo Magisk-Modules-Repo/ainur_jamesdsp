@@ -5,8 +5,10 @@ MODID=<MODID>
 
 if [ -f /data/magisk.img ] || [ -f /cache/magisk.img ] || [ -d /magisk ] && [ -d magisk/audmodlib/system ]; then
   AMLPATH=/magisk/audmodlib
+  MAGISK=true
 else
   AMLPATH=""
+  MAGISK=false
 fi
 
 # DETERMINE IF PIXEL (A/B OTA) DEVICE
