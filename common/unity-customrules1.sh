@@ -7,6 +7,7 @@
 # Do not remove last 3 lines (the if statement). Add any files added in custom rules before the sed statement and uncomment the whole thing (ex: echo "$UNITY$SYS/lib/soundfx/libv4a_fx_ics.so" >> $INFO)
 # ^ DO NOT MODIFY ^
 TIMEOFEXEC=3
+APP1=JamesDSPManager
 if [ "$ABI" == "arm" ]; then
   ui_print "    Installing libs for arm/arm64 device"
   $CP_PRFX $INSTALLER/custom/lib/arm/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so$CP_SFFX
