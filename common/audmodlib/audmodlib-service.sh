@@ -57,7 +57,7 @@ else
   if [ -f /data/magisk.img ] || [ -f /cache/magisk.img ] || [ -d /magisk ]; then
     MAGISK=true
     SEINJECT=magiskpolicy
-    SH=/magisk/.core/post-fs-data.d
+    SH=/magisk/.core/service.d
   elif [ "$supersuimg" ] || [ -d /su ]; then
     SEINJECT=/su/bin/supolicy
     SH=/su/su.d
