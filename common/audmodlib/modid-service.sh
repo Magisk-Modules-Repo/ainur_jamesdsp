@@ -56,7 +56,7 @@ if [ ! -d /magisk/$MODID ]; then
   <PATCHES>
 
   rm -f /magisk/.core/service.d/$MODID.sh
-else
+  
   # CUSTOM USER PATCHES
   <CUSTPATCHES>
 fi

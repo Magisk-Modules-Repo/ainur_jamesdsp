@@ -332,8 +332,13 @@ if [ "$MODID" != "$AMLID" ]; then
   sed -i '/<PATCHES>/d' $INSTALLER/common/$AMLID/$MODID-service.sh
   
   # INSERT CUSTOM USER SCRIPT INTO MOD SCRIPT
-  sed -i "/<CUSTPATCHES>/ r $INPUT_SCRIPT" 	$INSTALLER/common/$AMLID/$MODID-service.sh
-  sed -i '/<CUSTPATCHES>/d' $INSTALLER/common/$AMLID/$MODID-service.sh
+  if [ -s $INPUT_SCRIPT ]; then
+    sed -i "/<CUSTPATCHES>/ r $INPUT_SCRIPT" $INSTALLER/common/$AMLID/$MODID-service.sh
+    sed -i '/<CUSTPATCHES>/ a\else' $INSTALLER/common/$AMLID/$MODID-service.sh
+	sed -i '/<CUSTPATCHES>/d' $INSTALLER/common/$AMLID/$MODID-service.sh
+  else
+    sed -i '/<CUSTPATCHES>/d' $INSTALLER/common/$AMLID/$MODID-service.sh
+  fi
 fi
 
 magisk_install() {

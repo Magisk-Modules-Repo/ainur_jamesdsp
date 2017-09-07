@@ -55,7 +55,6 @@ else
   # DETERMINE ROOT BOOT SCRIPT TYPE
   EXT=".sh"
   if [ -f /data/magisk.img ] || [ -f /cache/magisk.img ] || [ -d /magisk ]; then
-    MAGISK=true
     SEINJECT=magiskpolicy
     SH=/magisk/.core/service.d
   elif [ "$supersuimg" ] || [ -d /su ]; then
@@ -95,9 +94,9 @@ else
   $SEINJECT --live "permissive $SOURCE audio_prop"
 
   LOG_FILE=/cache/$MODID-service.log
-  if [ -e /cache/$MODID-service.log ]; then
-    rm -f /cache/$MODID-service.log
+  if [ -f "$LOG_FILE" ]; then
+    rm -f $LOG_FILE
   fi
 
-  echo "$SH/$MODID-service$EXT has run successfully $(date +"%m-%d-%Y %H:%M:%S")" | tee -a $LOG_FILE;
+  echo "$SH/$MODID-service$EXT has run successfully $(date +"%m-%d-%Y %H:%M:%S")" | tee -a $LOG_FILE
 fi
