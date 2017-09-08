@@ -1,15 +1,8 @@
 #!/system/bin/sh
 # This script will be executed in late_start service mode
 # More info in the main Magisk thread
+SH=${0%/*}
 MODID=<MODID>
-
-if [ -f /data/magisk.img ] || [ -f /cache/magisk.img ] || [ -d /magisk ] && [ -d magisk/audmodlib/system ]; then
-  AMLPATH=/magisk/audmodlib
-  MAGISK=true
-else
-  AMLPATH=""
-  MAGISK=false
-fi
 
 # DETERMINE IF PIXEL (A/B OTA) DEVICE
 ABDeviceCheck=$(cat /proc/cmdline | grep slot_suffix | wc -l)
@@ -56,5 +49,6 @@ STRIGG_MIX_PATH=$SYS/sound_trigger_mixer_paths.xml
 STRIGG_MIX_PATH_9330=$SYS/sound_trigger_mixer_paths_wcd9330.xml
 V_MIX_PATH=$VEN/etc/mixer_paths.xml
 
+test -d /magisk/audmodlib$SYS && { MAGISK=true; AMLPATH=/magisk/audmodlib; } || { MAGISK=false; AMLPATH=""; }
+
 # CUSTOM USER PATCHES
-<PATCHES>

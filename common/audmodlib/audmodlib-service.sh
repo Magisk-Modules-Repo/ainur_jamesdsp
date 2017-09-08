@@ -1,17 +1,8 @@
 #!/system/bin/sh
 # This script will be executed in late_start service mode
 # More info in the main Magisk thread
+SH=${0%/*}
 LOG_FILE=/cache/audmodlib-service.log
-
-if [ -f /data/magisk.img ] || [ -f /cache/magisk.img ] || [ -d /magisk ] && [ -d magisk/audmodlib/system ]; then
-  AMLPATH=/magisk/audmodlib
-  MAGISK=true
-else
-  AMLPATH=""
-  MAGISK=false
-fi
-
-test -f "/magisk/audmodlib/update" && rm -f /magisk/audmodlib/update
 
 # DETERMINE IF PIXEL (A/B OTA) DEVICE
 ABDeviceCheck=$(cat /proc/cmdline | grep slot_suffix | wc -l)
@@ -56,37 +47,54 @@ if [ "$supersuimg" ]; then
   fi
 fi
 
+# AUDIO EFFECTS
+CONFIG_FILE=$SYS/etc/audio_effects.conf
+HTC_CONFIG_FILE=$SYS/etc/htc_audio_effects.conf
+OTHER_V_FILE=$SYS/etc/audio_effects_vendor.conf
+OFFLOAD_CONFIG=$SYS/etc/audio_effects_offload.conf
+V_CONFIG_FILE=$VEN/etc/audio_effects.conf
+# AUDIO POLICY
+A2DP_AUD_POL=$SYS/etc/a2dp_audio_policy_configuration.xml
+AUD_POL=$SYS/etc/audio_policy.conf
+AUD_POL_CONF=$SYS/etc/audio_policy_configuration.xml
+AUD_POL_VOL=$SYS/etc/audio_policy_volumes.xml
+SUB_AUD_POL=$SYS/etc/r_submix_audio_policy_configuration.xml
+USB_AUD_POL=$SYS/etc/usb_audio_policy_configuration.xml
+V_AUD_OUT_POL=$VEN/etc/audio_output_policy.conf
+V_AUD_POL=$VEN/etc/audio_policy.conf
+# MIXER PATHS
+MIX_PATH=$SYS/etc/mixer_paths.xml
+MIX_PATH_DTP=$SYS/etc/mixer_paths_dtp.xml
+MIX_PATH_i2s=$SYS/etc/mixer_paths_i2s.xml
+MIX_PATH_TASH=$SYS/etc/mixer_paths_tasha.xml
+STRIGG_MIX_PATH=$SYS/sound_trigger_mixer_paths.xml
+STRIGG_MIX_PATH_9330=$SYS/sound_trigger_mixer_paths_wcd9330.xml
+V_MIX_PATH=$VEN/etc/mixer_paths.xml
+
 # DETERMINE ROOT BOOT SCRIPT TYPE
 EXT=".sh"
+AMLPATH=""
+MAGISK=false
 if [ -f /data/magisk.img ] || [ -f /cache/magisk.img ] || [ -d /magisk ]; then
   SEINJECT=magiskpolicy
-  SH=/magisk/.core/service.d
+  test -d /magisk/audmodlib$SYS && { MAGISK=true; AMLPATH=/magisk/audmodlib; }
 elif [ "$supersuimg" ] || [ -d /su ]; then
   SEINJECT=/su/bin/supolicy
-  SH=/su/su.d
 elif [ -d $SYS/su ] || [ -f $SYS/xbin/daemonsu ] || [ -f $SYS/xbin/sugote ]; then
   SEINJECT=$SYS/xbin/supolicy
-  SH=$SYS/su.d
 elif [ -f $SYS/xbin/su ]; then
   if [ "$(cat $SYS/xbin/su | grep SuperSU)" ]; then
     SEINJECT=$SYS/xbin/supolicy
-    SH=$SYS/su.d
   else
     SEINJECT=/sepolicy
-    SH=$SYS/etc/init.d
     EXT=""
   fi
 else
   SEINJECT=/sepolicy
-  SH=$SYS/etc/init.d
   EXT=""
 fi
 
-if [ -d $SYS/priv-app ]; then
-  SOURCE=priv_app
-else
-  SOURCE=system_app
-fi
+test -d $SYS/priv-app && SOURCE=priv_app || SOURCE=system_app
 
 $SEINJECT --live "allow audioserver audioserver_tmpfs file { read write execute }" \
 "allow audioserver system_file file { execmod }" \
@@ -97,8 +105,12 @@ $SEINJECT --live "allow audioserver audioserver_tmpfs file { read write execute 
 
 $SEINJECT --live "permissive $SOURCE audio_prop"
 
+test -f "/magisk/audmodlib/update" && rm -f /magisk/audmodlib/update
+
 # MOD PATCHES
+
+test -z $MODID || sed -i "/magisk\/$MODID/,/fi #$MODID/d" $SH/service$EXT
 
 test -f "$LOG_FILE" && rm -f $LOG_FILE
 
-echo "$SH/audmodlib-service$EXT has run successfully $(date +"%m-%d-%Y %H:%M:%S")" | tee -a $LOG_FILE
+echo "Audmodlib service script ($SH/service$EXT) has run successfully $(date +"%m-%d-%Y %H:%M:%S")" | tee -a $LOG_FILE

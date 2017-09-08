@@ -328,12 +328,7 @@ if [ "$MODID" != "$AMLID" ]; then
   sed -i "s/<MODID>/$MODID/" $INSTALLER/common/$AMLID/$MODID-service.sh
   
   # INSERT CUSTOM USER SCRIPT INTO MOD SCRIPT
-  if [ -s $INPUT_SCRIPT ]; then
-    sed -i "/<PATCHES>/ r $INPUT_SCRIPT" $INSTALLER/common/$AMLID/$MODID-service.sh 
-	sed -i '/<PATCHES>/d' $INSTALLER/common/$AMLID/$MODID-service.sh
-  else
-    sed -i '/<PATCHES>/d' $INSTALLER/common/$AMLID/$MODID-service.sh
-  fi
+  sed -i "/# CUSTOM USER PATCHES/ r $INPUT_SCRIPT" $INSTALLER/common/$AMLID/$MODID-service.sh
 fi
 
 magisk_install() {
@@ -375,8 +370,9 @@ aml_script_patch() {
   fi
   
   # INSERT UNITY REMOVE PATCHES INTO MOD SCRIPT
+  sed -i "/magisk\/$MODID/,/fi #$MODID/d" $AMLSCRIPT
   sed -i 's/^/  /' $INPUT_PATCHES_REM
-  sed -i -e "/# MOD PATCHES/ a\if [ ! -f "$MOD_VER" ]; then" -e "/# MOD PATCHES/ r $INPUT_PATCHES_REM" -e '/# MOD PATCHES/ a\fi' $AMLSCRIPT
+  sed -i -e "/# MOD PATCHES/ a\if [ "\$MAGISK" == true ] && [ ! -d "/magisk/$MODID" ]; then" -e "/# MOD PATCHES/ a\  MODID=$MODID" -e "/# MOD PATCHES/ r $INPUT_PATCHES_REM" -e "/# MOD PATCHES/ a\fi #$MODID" $AMLSCRIPT
 }
 
 custom_app_install() {
@@ -805,6 +801,7 @@ unity_uninstall() {
 	
   if [ "$MODID" != "$AMLID" ]; then
     # RESTORE CONFIGS, LIBRARIES, & EFFECTS
+    sed -i "/magisk\/$MODID/,/fi #$MODID/d" $AMLSCRIPT
     ui_print "   Restoring necessary files"
 	source $INPUT_PATCHES_REM
   fi
