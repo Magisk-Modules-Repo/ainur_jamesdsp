@@ -372,7 +372,7 @@ aml_script_patch() {
   # INSERT UNITY REMOVE PATCHES INTO MOD SCRIPT
   sed -i "/magisk\/$MODID/,/fi #$MODID/d" $AMLSCRIPT
   sed -i 's/^/  /' $INPUT_PATCHES_REM
-  sed -i -e "/# MOD PATCHES/ a\if [ "\$MAGISK" == true ] && [ ! -d "/magisk/$MODID" ]; then" -e "/# MOD PATCHES/ a\  MODID=$MODID" -e "/# MOD PATCHES/ r $INPUT_PATCHES_REM" -e "/# MOD PATCHES/ a\fi #$MODID" $AMLSCRIPT
+  sed -i -e "/# MOD PATCHES/ a\if [ "\$MAGISK" == true ] && [ ! -d "/magisk/$MODID" ]; then" -e "/# MOD PATCHES/ a\  MODIDS=\"\${MODIDS} $MODID\"" -e "/# MOD PATCHES/ r $INPUT_PATCHES_REM" -e "/# MOD PATCHES/ a\fi #$MODID" $AMLSCRIPT
 }
 
 custom_app_install() {
@@ -513,12 +513,6 @@ unity_mod_wipe() {
   done
 
   if [ "$MAGISK" == false ] && [ "$MODID" != "$AMLID" ]; then
-
-    # REPLACE VENDOR FILE WITH PREVIOUS BACKUP
-    if [ -f $V_CONFIG_FILE ] && [ -f $V_CONFIG_FILE.bak ]; then
-      # RESTORE BACKED UP CONFIGS
-      cp -af $V_CONFIG_FILE.bak $V_CONFIG_FILE
-    fi
 
     # BACKUP CONFIGS
     ui_print "   Backing up existing audio_effects cfg files..."
@@ -731,11 +725,6 @@ unity_mod_patch() {
     test "$(grep "TIMEOFEXEC=4" $INPUT_RULES$NUM.sh)" && source $INPUT_RULES$NUM.sh
     NUM=$((NUM+1))
   done
-
-  # COPY OVER MAIN AUDIO_EFFECTS CFG FILE TO VENDOR FILE
-  if [ -f $V_CONFIG_FILE ]; then
-    cp -af $AMLPATH$CONFIG_FILE $AMLPATH$V_CONFIG_FILE
-  fi
 }
 
 unity_uninstall() {

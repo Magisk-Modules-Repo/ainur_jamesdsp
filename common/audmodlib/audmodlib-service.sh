@@ -3,6 +3,7 @@
 # More info in the main Magisk thread
 SH=${0%/*}
 LOG_FILE=/cache/audmodlib-service.log
+MODIDS=""
 
 # DETERMINE IF PIXEL (A/B OTA) DEVICE
 ABDeviceCheck=$(cat /proc/cmdline | grep slot_suffix | wc -l)
@@ -109,7 +110,9 @@ test -f "/magisk/audmodlib/update" && rm -f /magisk/audmodlib/update
 
 # MOD PATCHES
 
-test -z $MODID || sed -i "/magisk\/$MODID/,/fi #$MODID/d" $SH/service$EXT
+for MOD in ${MODIDS}; do
+  sed -i "/magisk\/${MOD}/,/fi #${MOD}/d" $SH/service$EXT
+done
 
 test -f "$LOG_FILE" && rm -f $LOG_FILE
 

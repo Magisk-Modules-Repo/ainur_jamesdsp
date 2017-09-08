@@ -19,6 +19,8 @@ Instructions are contained in each file
 13. Add any custom permissions needed into config.sh (this will apply to both magisk and system installs) (default permissions is 755 for folders and 644 for files)
 14. Add any custom install/uninstall logic to unity-customrules1.sh (follow the instructions inside)
 14a. This is where you would put your stuff for any custom files and whatever else isn't taken care of already
+
+*NOTE FOR PATCHING: patches need to be put into both system/etc/audio_effects (CONFIG_FILE) and /vendor/etc/audio_effects (V_CONFIG_FILE)
 ________________________________________________________________________________________________________________________________________________________________________
 
 AUDMODLIB VARIABLES (for reference)
