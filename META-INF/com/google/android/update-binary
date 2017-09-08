@@ -842,7 +842,7 @@ if is_mounted /data ; then
     mod_exist
 	
 	# Patch audmodlib-services script
-	aml_script_patch
+	test "$MODID" != "$AMLID" && aml_script_patch
 
     if [ "$ACTION" == "Install" ]; then
       ui_print " "
@@ -949,7 +949,7 @@ app_install_logic
 mod_exist
 
 # Patch audmodlib-services script
-aml_script_patch
+test "$MODID" != "$AMLID" && aml_script_patch
 
 if [ "$ACTION" == "Install" ]; then
 
