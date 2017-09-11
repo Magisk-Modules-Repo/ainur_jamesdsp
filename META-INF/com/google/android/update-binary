@@ -284,6 +284,7 @@ source $INPUT_VAR
 
 # SET MODID, MODPATH, AND AMLPATH
 test -z $MODID && MODID=`grep_prop id $INSTALLER/module.prop`
+AMLID=audmodlib
 MODPATH=$MOUNTPATH/$MODID
 AMLPATH=$MOUNTPATH/$AMLID
 
@@ -427,9 +428,9 @@ unity_prop_remove() {
     sed -i -e "s/setprop //g" -e "s/ /=/g" $1
   else
     AMLPROP="$SH/unity-props$EXT"
-    for AMLSCRIPT in $SYS/etc/init.d/unity-props /su/su.d/unity-props.sh $SYS/su.d/unity-props.sh; do
-      if [ "$AMLPROP" != "$AMLSCRIPT" ]; then
-        rm -f $AMLSCRIPT
+    for OLDSCRIPT in $SYS/etc/init.d/unity-props /su/su.d/unity-props.sh $SYS/su.d/unity-props.sh; do
+      if [ "$AMLPROP" != "$OLDSCRIPT" ]; then
+        rm -f $OLDSCRIPT
       fi
     done
   fi
@@ -450,6 +451,7 @@ unity_prop_copy() {
   ########################################################################################
   # Logic for unity prop install
   ########################################################################################
+  sed -i "/#/d" $1
   if [ "$MAGISK" == true ] || [ "$SYSOVER" == true ]; then
     AMLPROP="$AMLPATH/system.prop"
     sed -i -e "s/setprop //g" -e "s/ /=/g" $1
@@ -614,7 +616,8 @@ unity_mod_copy() {
 	  test ! "$(cat $INFO | grep "$SH/$MODID-service$EXT")" && echo "$SH/$MODID-service$EXT" >> $INFO
       test ! "$(cat $INFO | grep "$SH/unity-props$EXT")" && echo "$SH/unity-props$EXT" >> $INFO
     else
-	  $BOOTMODE -a [ -d /magisk/$AMLID ] && { sys_cp_ch /magisk/$AMLID/service.sh $AMLPATH/service.sh 0755; ui_print "   AML detected. Copying service script..."; } 
+	  $BOOTMODE -a [ -d /magisk/$AMLID/service.sh ] && sys_cp_ch /magisk/$AMLID/service.sh $AMLPATH/service.sh 0755
+	  $BOOTMODE -a [ -d /magisk/$AMLID/system.prop ] && sys_cp_ch /magisk/$AMLID/system.prop $AMLPATH/system.prop 0755
       test ! -f $AMLPATH/service.sh && sys_cp_ch $INSTALLER/common/$AMLID/$AMLID-service.sh $AMLPATH/service.sh 0755
       test "$MODID" != "$AMLID" && sys_cp_ch $INSTALLER/common/$AMLID/$MODID-service.sh $MODPATH/service.sh 0755
 	fi
@@ -684,7 +687,9 @@ magisk_audmodlib() {
   done
   
   ui_print "   Installing scripts for MagiskSU..."
-  $BOOTMODE -a [ -d /magisk/$AMLID ] && { sys_cp_ch /magisk/$AMLID/service.sh $AMLPATH/service.sh 0755; ui_print "   AML detected. Copying service script..."; } 
+  $BOOTMODE -a [ -d /magisk/$AMLID/service.sh ] && sys_cp_ch /magisk/$AMLID/service.sh $AMLPATH/service.sh 0755
+  $BOOTMODE -a [ -d /magisk/$AMLID/service.sh ] && sys_cp_ch /magisk/$AMLID/service.sh $AMLPATH/service.sh 0755
+  $BOOTMODE -a [ -d /magisk/$AMLID/system.prop ] && sys_cp_ch /magisk/$AMLID/system.prop $AMLPATH/system.prop 0755
   test ! -f $AMLPATH/service.sh && sys_cp_ch $INSTALLER/common/$AMLID/$AMLID-service.sh $AMLPATH/service.sh 0755
   test "$MODID" != "$AMLID" && sys_cp_ch $INSTALLER/common/$AMLID/$MODID-service.sh $MODPATH/service.sh 0755
 
@@ -742,7 +747,8 @@ magisk_audmodlib_bootmodeuninstall() {
     fi
   done
   
-  test -d /magisk/$AMLID && sys_cp_ch /magisk/$AMLID/service.sh $AMLPATH/service.sh 0755
+  test -d /magisk/$AMLID/service.sh && sys_cp_ch /magisk/$AMLID/service.sh $AMLPATH/service.sh 0755
+  test -d /magisk/$AMLID/system.prop && sys_cp_ch /magisk/$AMLID/system.prop $AMLPATH/system.prop 0755
   test ! -f $AMLPATH/service.sh && sys_cp_ch $INSTALLER/common/$AMLID/$AMLID-service.sh $AMLPATH/service.sh 0755
   cp -af $INSTALLER/common/$AMLID/audmodlibmodule.prop $AMLPATH/module.prop
   $BOOTMODE && mktouch /magisk/$AMLID/update  
@@ -1013,9 +1019,8 @@ else
 
   # Uninstall
   unity_uninstall
-  # COPY OVER MAIN AUDIO_EFFECTS CFG FILE TO VENDOR FILE
-  test "$MODID" != "$AMLID" && { mktouch /magisk/$AMLID/update; set_perm_recursive $AMLPATH 0 0 0755 0644; }
-
+  test "$MODID" != "$AMLID" && { set_perm_recursive $AMLPATH 0 0 0755 0644; $BOOTMODE && mktouch /magisk/$AMLID/update; }
+  
   #### COMPLETING UNINSTALL ####
   ui_print " "
   ui_print "- Completing uninstall -"
