@@ -81,9 +81,9 @@ REPLACE="
 # NOTE: This part has to be adjusted to fit your own needs
 
 set_permissions() {
-  # DEFAULT PERMISSIONS, DON'T REMOVE THEM
-  test "$MAGISK" == "true" && set_perm_recursive $MODPATH 0 0 0755 0644
-
+  # DEFAULT PERMISSIONS, DON'T REMOVE THEM 
+  test "$MAGISK" == "true" && set_perm_recursive $MODPATH 0 0 0755 0644 
+ 
   # CUSTOM PERMISSIONS
   
   # Some templates if you have no idea what to do:
