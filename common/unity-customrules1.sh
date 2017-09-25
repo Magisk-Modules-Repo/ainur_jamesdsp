@@ -10,11 +10,11 @@ TIMEOFEXEC=3
 if [ "$ABI" == "arm" ]; then
   ui_print "    Installing libs for arm/arm64 device"
   $CP_PRFX $INSTALLER/custom/lib/arm/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so$CP_SFFX
-  unzip -pq $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk lib/armeabi-v7a/libjamesDSPImpulseToolbox.so > $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so
+  $CP_PRFX $INSTALLER/custom/lib/arm/libjamesDSPImpulseToolbox.so $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so$CP_SFFX
 else
   ui_print "    Installing libs for x86 device"
   $CP_PRFX $INSTALLER/custom/lib/x86/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so$CP_SFFX
-  unzip -pq $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk lib/x86/libjamesDSPImpulseToolbox.so > $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so
+  $CP_PRFX $INSTALLER/custom/lib/x86/libjamesDSPImpulseToolbox.so $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so$CP_SFFX
 fi
 if [ "$MAGISK" == false ]; then
 	echo "$UNITY$SYS/lib/soundfx/libjamesDSPImpulseToolbox.so" >> $INFO
