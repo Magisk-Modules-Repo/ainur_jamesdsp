@@ -1,7 +1,7 @@
 #!/sbin/sh
 ##########################################################################################
 #
-# Unity Installer v2.0
+# Unity Installer
 # by ahrion & zackptg5
 #
 ##########################################################################################
@@ -198,7 +198,7 @@ action_complete() {
   ui_print " "
   test "$ACTION" == "Install" && ui_print "    --------- INSTALLATION SUCCESSFUL ---------" || ui_print "    --------- RESTORATION SUCCESSFUL ---------"
   ui_print " "
-  test "$ACTION" == "Install" && ui_print "Unity Installer by ahrion & zackptg5 @ XDA" || ui_print "Unity Uninstaller by ahrion & zackptg5 @ XDA"
+  ui_print "    Unity Installer by ahrion & zackptg5 @ XDA"
 }
 
 ##########################################################################################
@@ -426,10 +426,10 @@ app_install_logic() {
   # Logic for correct application installation
   ########################################################################################
   if [ -d $SYS/priv-app ]; then
-    APPTXT="   Installing libraries and apps for Lollipop and above..."
+    APPTXT="   Installing apps/libs for Lollipop & above..."
 	OLDAPP=false
   else
-    APPTXT="   Installing libraries and apps for Lollipop and below..."
+    APPTXT="   Installing apps/libs for Lollipop & below..."
 	OLDAPP=true
   fi
 }
@@ -529,7 +529,7 @@ unity_prop_copy() {
 
 unity_mod_wipe() {
   ########################################################################################
-  # Wipe for unity install
+  # Wipe for Unity Install
   ########################################################################################
   #### CLEANING UP ####
   ui_print " "
@@ -563,7 +563,7 @@ unity_mod_wipe() {
 
 unity_mod_directory() {
   ########################################################################################
-  # Make directories for unity install
+  # Make directories for Unity Install
   ########################################################################################
   #### PREPARE INSTALL ####
   ui_print " "
@@ -597,16 +597,16 @@ unity_mod_directory() {
 
 unity_mod_copy() {
   ########################################################################################
-  # Copy files over for unity install
+  # Copy files over for Unity Install
   ########################################################################################
   #### INSTALL FILES ####
   ui_print " "
-  ui_print "- Installing apps, libs, & scripts -"
+  ui_print "- Installing modification -"
 
   # INSTALL SCRIPTS
   if [ "$MAGISK" == false ]; then
     if [ "$SYSOVER" == true ]; then
-      ui_print "   Installing scripts for Magisk SU..."
+      ui_print "   Installing scripts for MagiskSU..."
     elif [ "$supersuimg" ] || [ -d /su ]; then
       ui_print "   Installing scripts for systemless SuperSU..."
     elif [ -d $SYS/su ] || [ -f $SYS/xbin/daemonsu ] || [ -f $SYS/xbin/sugote ]; then
@@ -618,7 +618,7 @@ unity_mod_copy() {
         ui_print "   Installing scripts for LineageOS SU..."
       fi
     else
-      ui_print "   Installing scripts for other root method or non root..."
+      ui_print "   Installing scripts for other root or rootless..."
     fi
 
     # CREATE FILE CONTAINING LIST OF ALL INSTALLED MOD FILES
@@ -673,7 +673,7 @@ unity_mod_copy() {
       ui_print "   ! Addon.d not detected. Backup script not installed..."
     fi
   elif [ "$SYSOVER" == false ]; then
-    ui_print "   Installing scripts for Magisk SU..."
+    ui_print "   Installing scripts for MagiskSU..."
   fi
   
   test "$MAGISK" == true -o "$SYSOVER" == true && { test "$MODID" != "$AMLID" && sys_cp_ch $INSTALLER/common/$AMLID/$MODID-service.sh $MODPATH/service.sh 0755; }
@@ -690,7 +690,7 @@ unity_mod_copy() {
   done
 
   # ADD BUILDPROPS
-  ui_print "   Adding build props..."
+  ui_print "   Adding build.props..."
   unity_prop_copy $INPUT_PROPS
 
   NUM=1; while [ $NUM -le $NUMOFCUSTRULES ]; do
@@ -739,7 +739,7 @@ aml_mod() {
 
 aml_mod_patch() {
   ########################################################################################
-  # Audio Modification Library file patcher for unity install
+  # Audio Modification Library file patcher for Unity Install
   ########################################################################################
   #### PATCHING FILES ####
   ui_print "- Patching necessary files -"
@@ -793,7 +793,7 @@ unity_uninstall() {
   ui_print "- Cleaning up previous installations -"
 
   # REMOVE PROPS
-  ui_print "   Removing build props..."
+  ui_print "   Removing build.props..."
   unity_prop_remove $INPUT_PROPS
 
   # REMOVE FILES
