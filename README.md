@@ -22,6 +22,7 @@ v1.1
 	- Unity/AML v2.1: Various script fixes and improvements
 	- Unity/AML v2.1: Fix cache system installs
 	- Unity/AML v2.1: Added support for supersu bindsbin mode
+	- Unity/AML v2.1: Moved scripts to post-fs-data for magisk installs, fixes some issues such as AM3D white screen on compatible devices
 	
 v1.0
 	- Initial Unity/AML v2.0 release
