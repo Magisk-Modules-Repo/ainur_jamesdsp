@@ -8,10 +8,10 @@
 TIMEOFEXEC=2
 if [ "$ABI" == "arm" ]; then
   ui_print "    Installing libs for arm/arm64 device"
-  $CP_PRFX $INSTALLER/custom/lib/arm/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so$CP_SFFX
-  $CP_PRFX $INSTALLER/custom/lib/arm/libjamesDSPImpulseToolbox.so $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so$CP_SFFX
+  $CP_PRFX $INSTALLER/custom/lib/arm/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so
+  $CP_PRFX $INSTALLER/custom/lib/arm/libjamesDSPImpulseToolbox.so $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so
 else
   ui_print "    Installing libs for x86 device"
-  $CP_PRFX $INSTALLER/custom/lib/x86/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so$CP_SFFX
-  $CP_PRFX $INSTALLER/custom/lib/x86/libjamesDSPImpulseToolbox.so $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so$CP_SFFX
+  $CP_PRFX $INSTALLER/custom/lib/x86/libjamesdsp.so $UNITY$SYS/lib/soundfx/libjamesdsp.so
+  $CP_PRFX $INSTALLER/custom/lib/x86/libjamesDSPImpulseToolbox.so $UNITY$SYS/lib/libjamesDSPImpulseToolbox.so
 fi
