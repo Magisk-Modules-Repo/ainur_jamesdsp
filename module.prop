@@ -1,6 +1,6 @@
 id=ainur_jamesdsp
 name=Ainur JamesDSP
-version=v1.1 (08-26-2017)
+version=v1.1 (10-11-2017)
 versionCode=2
 author=james34602, ahrion, zackptg5
 description=JamesDSPManager is a reformed audio engine based of AOSP and OmniROM DSPManager source code with enhanced features and tuning
