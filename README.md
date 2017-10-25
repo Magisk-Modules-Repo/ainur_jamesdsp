@@ -6,11 +6,11 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 
 ## Compatibility
 * Android Jellybean+
-* init.d (LineageOS SU, phh's SU, & rootless)
+* init.d (other root & rootless)
 * MagiskSU & SuperSU
 * Magisk & System install
 * Nexus/Pixel support (A/B OTA)
-* SELinix enforcing (LOS SU & rootless need permissive)
+* SELinix enforcing
 * Works with [AM3D Zirene Sound](https://forum.xda-developers.com/android/apps-games/mod-zirene-sound-am3d-t3396698/post71580634#post71580634}, [Dolby Atmos](https://github.com/therealahrion/Dolby-Atmos-ZTE-Axon-7), & ViPER4Android XHiFi
 
 ## Change Log
