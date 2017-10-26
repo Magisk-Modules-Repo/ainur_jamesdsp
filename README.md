@@ -14,7 +14,7 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 * Works with [AM3D Zirene Sound](https://forum.xda-developers.com/android/apps-games/mod-zirene-sound-am3d-t3396698/post71580634#post71580634), [Dolby Atmos](https://github.com/therealahrion/Dolby-Atmos-ZTE-Axon-7), & ViPER4Android XHiFi
 
 ## Change Log
-### v1.1 - 10.20.2017
+### v1.1 - 10.26.2017
 * Unity/AML v2.1: Updated for Magisk v14.3
 * Unity/AML v2.1: Updated to Magisk module template 1410
 * Unity/AML v2.1: Massive script reduction & efficiency enhancements
@@ -38,7 +38,7 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 * Unity/AML v2.1: Addon.d script fixes/improvements
 * Unity/AML v2.1: Various miscellaneous script fixes and improvements
 	
-### v1.0
+### v1.0 -09.25.2017
 * Initial Unity/AML v2.0 release
 * Unity/AML v2.0: Massive installer and script overhaul
 * Unity v2.0: Added autouninstall (if mod is already installed and you flash same version zip again, it'll uninstall), thus removing the need for an uninstall zip
