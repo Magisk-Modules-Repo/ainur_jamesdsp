@@ -6,7 +6,7 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 
 ## Compatibility
 * Android Jellybean+
-* init.d (other root & rootless) - requires init.d support. If you don't have init.d support, try this: [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105)
+* init.d (other root & rootless) - requires init.d support. If you don't have init.d support, try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105)
 * MagiskSU & SuperSU
 * Magisk & System install
 * Nexus/Pixel support (A/B OTA)
