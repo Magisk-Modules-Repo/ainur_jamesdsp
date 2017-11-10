@@ -10,7 +10,7 @@ mount_partitions() {
   mount /data 2>/dev/null
   mount /cache 2>/dev/null
   # Check A/B slot
-  [ -f /data/magisk.img -o -d /magisk ] && WRITE=ro || WRITE=rw
+  [ -d /data/magisk -o -d /magisk ] && WRITE=ro || WRITE=rw
   SYS=/system
   REALSYS=/system
   SLOT=`getprop ro.boot.slot_suffix`
@@ -35,7 +35,7 @@ mount_partitions() {
   $SKIP_INITRAMFS && ui_print "   ! Device skip_initramfs detected"
   if [ -L /system/vendor ]; then
     # Seperate /vendor partition
-    [ -f /data/magisk.img -o -d /magisk ] && VEN=/system/vendor || VEN=/vendor
+    [ -d /data/magisk -o -d /magisk ] && VEN=/system/vendor || VEN=/vendor
     is_mounted /vendor || mount -o $WRITE /vendor 2>/dev/null
     if ! is_mounted /vendor; then
       VENDORBLOCK=`find /dev/block -iname vendor$SLOT | head -n 1`
@@ -89,7 +89,7 @@ boot_actions() {
 
 recovery_actions() {
   # Magisk clean flash support
-  if [ -e /data/magisk -a ! -e /data/magisk.img ]; then
+  if [ -d /data/magisk -a ! -f /data/magisk.img ]; then
     /system/bin/make_ext4fs -l 64M /data/magisk.img
   fi
   # TWRP bug fix
@@ -288,12 +288,12 @@ patch_script() {
   test ! -z $ROOT && sed -i "s|<ROOT>|$ROOT|" $1 || sed -i "/<ROOT>/d" $1
   test ! -z $XML_PATH && sed -i "s|<XML_PRFX>|$XML_PATH|" $1 || sed -i "/<XML_PRFX>/d" $1
   if [ "$MAGISK" == false ]; then
-    test ! -z $EXT && sed -i "s|<EXT>|$EXT|" $1 || sed -i "/<EXT>/d" $1
+    sed -i "s|<SHEBANG>|$SHEBANG|" $1
 	sed -i "s|<SEINJECT>|$SEINJECT|" $1
 	sed -i "/<AMLPATH>/d" $1
 	sed -i "s|$MOUNTPATH||g" $1
   else
-	sed -i "s|<EXT>|.sh|" $1
+    sed -i "s|<SHEBANG>|#!/system/bin/sh|" $1
 	sed -i "s|<SEINJECT>|magiskpolicy|" $1
 	sed -i "s|<AMLPATH>|$AMLPATH|" $1
 	sed -i "s|$MOUNTPATH|/magisk|g" $1
