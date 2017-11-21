@@ -14,9 +14,12 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 * Works with [AM3D Zirene Sound](https://forum.xda-developers.com/android/apps-games/mod-zirene-sound-am3d-t3396698/post71580634#post71580634), [Dolby Atmos](https://github.com/therealahrion/Dolby-Atmos-ZTE-Axon-7), & ViPER4Android XHiFi
 
 ## Change Log
+### v1.3 - 11.20.2017
+* Updated JamesDSP to 11-20-2017 offical stable release
+
 ### v1.2 - 11.08.2017
 * Updated to Unity/AML v2.2 - Please clean install Audio Modification Library and all modules (this will be the last version you'll have to clean install so in the future the auto clean install/upgrade script will take effect)
-+ Updated JamesDSP to 11-03-2017 official stable release
+* Updated JamesDSP to 11-03-2017 official stable release
 
 ### v1.1 - 10.26.2017
 * Unity/AML v2.1: Updated for Magisk v14.3
