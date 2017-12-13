@@ -3,46 +3,30 @@ SH=${0%/*}
 SEINJECT=<SEINJECT>
 AMLPATH=<AMLPATH>
 MAGISK=<MAGISK>
-XML_PRFX=<XML_PRFX>
 ROOT=<ROOT>
 SYS=<SYS>
 VEN=<VEN>
+SOURCE=<SOURCE>
 MODIDS=""
-test -d $SYS/priv-app && SOURCE=priv_app || SOURCE=system_app
-
-# AUDIO EFFECTS
-CONFIG_FILE=$SYS/etc/audio_effects.conf
-HTC_CONFIG_FILE=$SYS/etc/htc_audio_effects.conf
-OTHER_V_FILE=$SYS/etc/audio_effects_vendor.conf
-OFFLOAD_CONFIG=$SYS/etc/audio_effects_offload.conf
-V_CONFIG_FILE=$VEN/etc/audio_effects.conf
-# AUDIO POLICY
-A2DP_AUD_POL=$SYS/etc/a2dp_audio_policy_configuration.xml
-AUD_POL=$SYS/etc/audio_policy.conf
-AUD_POL_CONF=$SYS/etc/audio_policy_configuration.xml
-AUD_POL_VOL=$SYS/etc/audio_policy_volumes.xml
-SUB_AUD_POL=$SYS/etc/r_submix_audio_policy_configuration.xml
-USB_AUD_POL=$SYS/etc/usb_audio_policy_configuration.xml
-V_AUD_OUT_POL=$VEN/etc/audio_output_policy.conf
-V_AUD_POL=$VEN/etc/audio_policy.conf
-# MIXER PATHS
-MIX_PATH=$SYS/etc/mixer_paths.xml
-MIX_PATH_DTP=$SYS/etc/mixer_paths_dtp.xml
-MIX_PATH_i2s=$SYS/etc/mixer_paths_i2s.xml
-MIX_PATH_TASH=$SYS/etc/mixer_paths_tasha.xml
-STRIGG_MIX_PATH=$SYS/sound_trigger_mixer_paths.xml
-STRIGG_MIX_PATH_9330=$SYS/sound_trigger_mixer_paths_wcd9330.xml
-V_MIX_PATH=$VEN/etc/mixer_paths.xml
+LIBDIR=<LIBDIR>
+### FILE LOCATIONS ###
+CFGS="${CFGS} $(find -L $SYS -type f -name "*audio_effects*.conf")"
+CFGSXML="${CFGSXML} $(find -L $SYS -type f -name "*audio_effects*.xml")"
+POLS="${POLS} $(find -L $SYS -type f -name "*audio*policy*.conf")"
+POLSXML="${POLSXML} $(find -L $SYS -type f -name "*audio_policy*.xml")"
+MIXS="${MIXS} $(find -L $SYS -type f -name "*mixer_paths*.xml")"
 
 # SEPOLICY SETTING FUNCTION
 set_sepolicy() {
-  if [ $(basename $SEINJECT) == "sepolicy-inject" ]; then
-	test -z $2 && $SEINJECT -Z $1 -l || $SEINJECT -s $1 -t $2 -c $3 -p $4 -l
+  if [ "$(basename $SEINJECT)" == "sepolicy-inject" ]; then
+	  if [ -z $2 ]; then $SEINJECT -Z $(echo $1 | sed 's/,/; set_sepolicy /g') -l; else $SEINJECT -s $1 -t $2 -c $3 -p $4 -l; fi
   else
-    test -z $2 && $SEINJECT --live "permissive $(echo $1 | sed 's/,/ /g')" || $SEINJECT --live "allow $1 $2 $3 { $(echo $4 | sed 's/,/ /g') }" 
+    if [ -z $2 ]; then $SEINJECT --live "permissive $(echo $1 | sed 's/,/ /g')"; else $SEINJECT --live "allow $1 $2 $3 { $(echo $4 | sed 's/,/ /g') }"; fi
   fi
 }
 
+set_sepolicy hal_audio_default hal_audio_default process execmem
+set_sepolicy audioserver unlabeled file read,write,open,getattr,execute
 set_sepolicy audioserver audioserver_tmpfs file read,write,execute
 set_sepolicy audioserver system_file file execmod
 set_sepolicy mediaserver mediaserver_tmpfs file read,write,execute
@@ -55,7 +39,7 @@ set_sepolicy $SOURCE,audio_prop
 
 if [ "$MAGISK" == true ]; then
   for MOD in ${MODIDS}; do
-    sed -i "/magisk\/${MOD}/,/fi #${MOD}/d" $SH/post-fs-data.sh
+    sed -i "/^#$MODID/,/fi #$MODID/d" $SH/post-fs-data.sh
   done
   test ! "$(sed -n '/# MOD PATCHES/{n;p}' $AMLPATH/post-fs-data.sh)" && rm -rf $AMLPATH
 fi

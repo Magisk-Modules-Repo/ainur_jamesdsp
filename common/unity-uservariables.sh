@@ -5,3 +5,5 @@
 #MINAPI=21
 #MAXAPI=25
 AUDMODLIB=true
+if $BOOTMODE; then SDCARD=/storage/emulated/0; else SDCARD=/data/media/0; fi
+if $OREONEW && $MAGISK; then LATESTARTSERVICE=true; fi

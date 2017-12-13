@@ -1,6 +1,8 @@
-for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
-  if [ -f $CFG ]; then
-    sed -i '/jamesdsp {/,/}/d' $AMLPATH$CFG
-    sed -i '/jdsp {/,/}/d' $AMLPATH$CFG
-  fi
+for FILE in ${CFGS}; do
+  sed -i "/jamesdsp {/,/}/d" $AMLPATH$FILE
+  sed -i "/jdsp {/,/}/d" $AMLPATH$FILE
+done
+for FILE in ${CFGSXML}; do
+  sed -i "/jamesdsp/d" $AMLPATH$FILE
+  sed -i "/jdsp/d" $AMLPATH$FILE
 done
