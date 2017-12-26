@@ -14,6 +14,9 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 * Works with [AM3D Zirene Sound](https://forum.xda-developers.com/android/apps-games/mod-zirene-sound-am3d-t3396698/post71580634#post71580634), [Dolby Atmos](https://github.com/therealahrion/Dolby-Atmos-ZTE-Axon-7), & ViPER4Android XHiFi
 
 ## Change Log
+### v1.8 - 12.25.2017
+* Updated to Unity/AML v2.6
+
 ### v1.7 - 12.20.2017
 * Updated JDSP to 12/20 version - uses HQ libs
 
