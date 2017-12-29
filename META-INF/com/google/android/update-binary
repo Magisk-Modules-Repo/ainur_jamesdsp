@@ -388,7 +388,7 @@ is_mounted /data || mount /data || is_mounted /cache || mount /cache || { ui_pri
 
 pre_install() {
   # USE VENDOR IF OREO OR NEWER
-  if [ $API -ge 26 ]; then LIBPATCH="$(echo $REALVEN | sed "s|/|\\\amltemp\\\/|g" | sed "s|amltemp||g")"; LIBDIR=$VEN ;OREONEW=true; else LIBPATCH="\\\/system"; LIBDIR=/system; OREONEW=false; fi
+  if [ $API -ge 26 ]; then LIBPATCH="\\\/vendor"; LIBDIR=$VEN ;OREONEW=true; else LIBPATCH="\\\/system"; LIBDIR=/system; OREONEW=false; fi
   
   # REMOVE COMMENTS FROM USER INPUT FILES AND ADD PROPER VARIABLES
   for TMP in $INSTALLER/common/unity-files-wipe.sh $INSTALLER/common/aml-patches.sh $INSTALLER/common/aml-patches-remove.sh $INSTALLER/common/aml-patches-wipe.sh $INSTALLER/common/unity-uservariables.sh $INSTALLER/common/unity-customrules $INSTALLER/common/post-fs-data.sh $INSTALLER/common/service.sh $INSTALLER/common/*.prop; do
@@ -444,7 +444,6 @@ common_install() {
 
 magisk_install() {
   VEN=/system/vendor
-  if [ -L /system/vendor ]; then REALVEN=/vendor; else REALVEN=$VEN; fi
   # PREP FILES & VARIABLES
   pre_install
   MAGISK=true
@@ -471,7 +470,6 @@ magisk_install() {
 system_install() {
   # MOUNT PARTITIONS
   mount_partitions_system
-  REALVEN=$VEN
   ui_print "- System install detected"
   # DETECT VERSION AND ARCHITECTURE
   api_level_arch_detect_mod
@@ -701,12 +699,6 @@ unity_mod_copy() {
   
     #INSTALL POST-FS-DATA MODE SCRIPTS
     $POSTFSDATA && { $CP_NBPRFX $INSTALLER/common/unity-audmodlib/$MODID-post-fs-data.sh $MODPATH/post-fs-data.sh; patch_script $MODPATH/post-fs-data.sh; }
-    if $OREONEW && [ "$(grep_prop ro.product.brand)" == "OnePlus" ]; then
-      ui_print "   ! Oneplus Oreo device detected !"
-      ui_print "   Setting selinux to permissive..."
-      sed -i '/# SEPOLICY SETTING FUNCTION/,$d' $MODPATH/post-fs-data.sh
-      echo >> "setenforce 0" $MODPATH/post-fs-data.sh
-    fi
 
     # SERVICE MODE SCRIPTS
     $LATESTARTSERVICE && { $CP_NBPRFX $INSTALLER/common/unity-audmodlib/$MODID-service.sh $MODPATH/service.sh; patch_script $MODPATH/service.sh; }
@@ -908,21 +900,16 @@ MAGISKBIN=/data/adb/magisk
 MOUNTPATH=$TMPDIR/magisk_img
 $BOOTMODE && IMG=/data/adb/magisk_merge.img
 
-# CHECK FOR OLD MAGISK
-[ ! -d $MAGISKBIN -a -d /data/magisk ] && require_new_magisk
-
-### SYSTEM INSTALL (IF APPLICABLE) ###
-if [ ! -d $MAGISKBIN ]; then system_install; standard_procedure; fi
-
-### MAGISK INSTALL ###
-
-# UTILITY FUNCTIONS MUST EXIST
-[ -f $MAGISKBIN/util_functions.sh ] || require_new_magisk
-# LOAD MAGISK UTILITY FUNCTIONS
-. $MAGISKBIN/util_functions.sh
-
-# CHECK THE INSTALLED MAGISK VERSION
-[ ! -z $MAGISK_VER_CODE -a $MAGISK_VER_CODE -ge $(grep_prop minMagisk $INSTALLER/module.prop) ] || require_new_magisk
+# CHECK FOR OLD MAGISK, DETERMINE IF SYSTEM INSTALL OR MAGISK INSTALL, CHECK MAGISK VERSION (IF APPLICABLE)
+if [ ! -d $MAGISKBIN ] && [ ! -d /data/magisk ]; then
+  system_install
+  standard_procedure
+elif [ ! -f $MAGISKBIN/util_functions.sh ]; then
+  require_new_magisk
+else
+  . $MAGISKBIN/util_functions.sh
+  [ ! -z $MAGISK_VER_CODE -a $MAGISK_VER_CODE -ge $(grep_prop minMagisk $INSTALLER/module.prop) ] || require_new_magisk
+fi
 
 # MOUNT PARTITIONS
 mount_partitions
