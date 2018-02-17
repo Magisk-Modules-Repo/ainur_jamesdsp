@@ -1,5 +1,4 @@
-rm -rf $SDCARD/.jdsptempdonotdelete
-[ $API -ge 26 ] && { rm -rf /data/data/james.dsp; rm -rf /data/app/james.dsp*; }
+[ $API -ge 26 ] && { rm -rf /data/data/james.dsp; rm -rf /data/app/james.dsp*; rm -f $SDCARD/JamesDSPManager.apk; }
 
 $MAGISK || { for FILE in ${CFGS}; do
                case $FILE in

@@ -25,17 +25,11 @@ cp_ch $INSTALLER/custom/$QUAL/$ABI/libjamesdsp.so $INSTALLER/system/lib/soundfx/
 cp_ch $INSTALLER/custom/$ABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
 # App only works when installed normally to data in oreo
 if [ $API -ge 26 ]; then
-  if $MAGISK; then
-    LATESTARTSERVICE=true
-    cp_ch $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $SDCARD/.jdsptempdonotdelete/JamesDSPManager.apk
-    rm -f $INFO
-  else
-    cp_ch $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
-    ui_print " "
-    ui_print "   JamesDSPManager.apk copied to root of internal storage (sdcard)"
-    ui_print "   Install manually after booting"
-    sleep 2
-  fi
+  cp -f $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
+  ui_print " "
+  ui_print "   JamesDSPManager.apk copied to root of internal storage (sdcard)"
+  ui_print "   Install manually after booting"
+  sleep 2
   rm -rf $INSTALLER/system/app
 fi
 ui_print "   Patching existing audio_effects files..."
