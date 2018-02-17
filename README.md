@@ -7,6 +7,12 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.4 - 2.16.2018
+* Add file backup on system installs
+* Fine tune unity prop logic
+* Update util_functions with magisk 15.4 stuff
+* Fix music_helper/sa3d removal in xml files
+
 ### v1.3 - 2.12.2018
 * Fix vendor cfg creation for devices that don't have it
 * Fix sepolicy patching
