@@ -3,12 +3,17 @@ case $(basename $ZIP) in
   *sq*|*Sq*|*SQ*) QUAL=sq;;
   *hq*|*Hq*|*HQ*) QUAL=hq;;
 esac
+
+# Keycheck binary by someone755 @Github, idea for code below by Zappo @xda-developers
+chmod 755 $INSTALLER/common/keycheck
+FUNCTION=chooseport
+
 chooseport() {
   ui_print "   Choose which drivers you want installed:"
   ui_print "   Vol Up = HQ, Vol Down = SQ"
   #note from chainfire @xda-developers: getevent behaves weird when piped, and busybox grep likes that even less than toolbox/toybox grep
   while (true); do
-    getevent -lc 1 2>&1 | /system/bin/grep VOLUME | /system/bin/grep " DOWN" > $INSTALLER/events
+    (getevent -lc 1 2>&1 | /system/bin/grep VOLUME | /system/bin/grep " DOWN" > $INSTALLER/events) || { FUNCTION=chooseportold; chooseportold; break; }
     if (`cat $INSTALLER/events 2>/dev/null | /system/bin/grep VOLUME >/dev/null`); then
       break
     fi
@@ -20,7 +25,25 @@ chooseport() {
   fi
 }
 
-[ -z $QUAL ] && { if chooseport; then QUAL=hq; else QUAL=sq; fi; }
+chooseportold() {
+  ui_print "   ! Legacy device detected!"
+  ui_print "   ! Restarting selection w/ old keycheck method"
+  ui_print " "
+  ui_print "   Enter selection again:"
+  $INSTALLER/common/keycheck
+  SEL=$?
+  shift
+  if [ $SEL -eq 42 ]; then
+    return 0
+  elif [ $SEL -eq 21 ]; then
+    return 1
+  else
+    ui_print "Vol key not detected! Defaulting to Vol Up! "
+    return 0
+  fi
+}
+
+[ -z $QUAL ] && { if $FUNCTION; then QUAL=hq; else QUAL=sq; fi; }
 cp_ch $INSTALLER/custom/$QUAL/$ABI/libjamesdsp.so $INSTALLER/system/lib/soundfx/libjamesdsp.so
 cp_ch $INSTALLER/custom/$ABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
 # App only works when installed normally to data in oreo

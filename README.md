@@ -7,6 +7,11 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.5 - 2.25.2018
+* Fixed vendor files in bootmode for devices with separate vendor partitions
+* Bring back old keycheck method or devices that don't like the newer chainfire method
+* Fix seg faults on system installs
+
 ### v1.4.2 - 2.17.2018
 * Boot script not working, have user do it manually for oreo
 
