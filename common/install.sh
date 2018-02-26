@@ -13,7 +13,7 @@ chooseport() {
   ui_print "   Vol Up = HQ, Vol Down = SQ"
   #note from chainfire @xda-developers: getevent behaves weird when piped, and busybox grep likes that even less than toolbox/toybox grep
   while (true); do
-    (getevent -lc 1 2>&1 | /system/bin/grep VOLUME | /system/bin/grep " DOWN" > $INSTALLER/events) || { $MAGISK || { FUNCTION=chooseportold; chooseportold; break; }; }
+    (getevent -lc 1 2>&1 | /system/bin/grep VOLUME | /system/bin/grep " DOWN" > $INSTALLER/events) || { $BOOTMODE || { FUNCTION=chooseportold; chooseportold; break; }; }
     if (`cat $INSTALLER/events 2>/dev/null | /system/bin/grep VOLUME >/dev/null`); then
       break
     fi
