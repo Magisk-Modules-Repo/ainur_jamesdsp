@@ -7,6 +7,9 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.5.2 - 3.1.2018
+* Real fix for vol key logic
+
 ### v1.5.1 - 2.26.2018
 * Quick fix for vol key logic
 
