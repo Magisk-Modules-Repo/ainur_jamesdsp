@@ -87,11 +87,7 @@ if [ $API -ge 26 ]; then
 fi
 ui_print "   Patching existing audio_effects files..."
 for FILE in ${CFGS}; do
-  if $MAGISK; then
-    cp_ch $ORIGDIR$FILE $UNITY$FILE
-  else
-    [ ! -f $ORIGDIR$FILE.bak ] && cp_ch $ORIGDIR$FILE $UNITY$FILE.bak
-  fi
+  cp_ch $ORIGDIR$FILE $UNITY$FILE
   case $FILE in
     *.conf) sed -i "/effects {/,/^}/ {/^ *music_helper {/,/}/ s/^/#/g}" $UNITY$FILE
             sed -i "/effects {/,/^}/ {/^ *sa3d {/,/^  }/ s/^/#/g}" $UNITY$FILE

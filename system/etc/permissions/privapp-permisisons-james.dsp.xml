@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<permissions>
+  <privapp-permissions package="james.dsp">
+    <permission name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <permission name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <permission name="android.permission.BLUETOOTH" />
+    <permission name="android.permission.BLUETOOTH_ADMIN" />
+    <permission name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  </privapp-permissions>
+</permissions>
