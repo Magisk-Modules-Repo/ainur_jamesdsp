@@ -1,3 +1,10 @@
+ospeff_rem() {
+  case $2 in
+    *.conf) [ "$(sed -n "/^output_session_processing {/,/^}/ {/$1/p}" $2)" ] && sed -i "/effects {/,/^}/ {/^ *$1 {/,/}/ s/^/#/g}" $2;;
+    *.xml) sed -ri "/^ *<postprocess>$/,/<\/postprocess>/ {/<stream type=\"music\">/,/<\/stream>/ s/^( *)<apply effect=\"$1\"\/>/\1<\!--<apply effect=\"$1\"\/>-->/}" $2;;
+  esac
+}
+
 # GET HQ/SQ FROM ZIP NAME
 case $(basename $ZIP) in
   *sq*|*Sq*|*SQ*) QUAL=sq;;
@@ -88,20 +95,16 @@ fi
 ui_print "   Patching existing audio_effects files..."
 for FILE in ${CFGS}; do
   cp_ch $ORIGDIR$FILE $UNITY$FILE
+  ospeff_rem "music_helper" $UNITY$FILE
+  ospeff_rem "sa3d" $UNITY$FILE
+  ospeff_rem "soundalive" $UNITY$FILE
+  ospeff_rem "dha" $UNITY$FILE
   case $FILE in
-    *.conf) sed -i "/effects {/,/^}/ {/^ *music_helper {/,/}/ s/^/#/g}" $UNITY$FILE
-            sed -i "/effects {/,/^}/ {/^ *sa3d {/,/^  }/ s/^/#/g}" $UNITY$FILE
-            sed -i "/effects {/,/^}/ {/^ *soundalive {/,/^  }/ s/^/#/g}" $UNITY$FILE
-            sed -i "/effects {/,/^}/ {/^ *dha {/,/^  }/ s/^/#/g}" $UNITY$FILE
-            sed -i "/jamesdsp {/,/}/d" $UNITY$FILE
+    *.conf) sed -i "/jamesdsp {/,/}/d" $UNITY$FILE
             sed -i "/jdsp {/,/}/d" $UNITY$FILE
             sed -i "s/^effects {/effects {\n  jamesdsp { #$MODID\n    library jdsp\n    uuid f27317f4-c984-4de6-9a90-545759495bf2\n  } #$MODID/g" $UNITY$FILE
             sed -i "s/^libraries {/libraries {\n  jdsp { #$MODID\n    path $LIBPATCH\/lib\/soundfx\/libjamesdsp.so\n  } #$MODID/g" $UNITY$FILE;;
-    *.xml) sed -ri "/^ *<postprocess>$/,/<\/postprocess>/ {/<stream type=\"music\">/,/<\/stream>/ s/^( *)<apply effect=\"music_helper\"\/>/\1<\!--<apply effect=\"music_helper\"\/>-->/}" $UNITY$FILE
-           sed -ri "/^ *<postprocess>$/,/<\/postprocess>/ {/<stream type=\"music\">/,/<\/stream>/ s/^( *)<apply effect=\"sa3d\"\/>/\1<\!--<apply effect=\"sa3d\"\/>-->/}" $UNITY$FILE
-           sed -ri "/^ *<postprocess>$/,/<\/postprocess>/ {/<stream type=\"music\">/,/<\/stream>/ s/^( *)<apply effect=\"soundalive\"\/>/\1<\!--<apply effect=\"soundalive\"\/>-->/}" $UNITY$FILE
-           sed -ri "/^ *<postprocess>$/,/<\/postprocess>/ {/<stream type=\"music\">/,/<\/stream>/ s/^( *)<apply effect=\"dha\"\/>/\1<\!--<apply effect=\"dha\"\/>-->/}" $UNITY$FILE
-           sed -i "/jamesdsp/d" $UNITY$FILE
+    *.xml) sed -i "/jamesdsp/d" $UNITY$FILE
            sed -i "/jdsp/d" $UNITY$FILE
            sed -i "/<libraries>/ a\        <library name=\"jdsp\" path=\"libjamesdsp.so\"\/><!--$MODID-->" $UNITY$FILE
            sed -i "/<effects>/ a\        <effect name=\"jamesdsp\" library=\"jdsp\" uuid=\"f27317f4-c984-4de6-9a90-545759495bf2\"\/><!--$MODID-->" $UNITY$FILE;;
