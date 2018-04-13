@@ -53,11 +53,12 @@ DYNAMICAPP=true
 unity_custom() {
   if $MAGISK && $BOOTMODE; then ORIGDIR="/sbin/.core/mirror"; else ORIGDIR=""; fi
   if $BOOTMODE; then
-    CFGS="$(find /system /vendor -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml" | sed "s|^/vendor|/system/vendor|g")"
-  else  
+    SDCARD=/storage/emulated/0
+    CFGS="$(find /system /vendor -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml")"
+  else
+    SDCARD=/data/media/0
     CFGS="$(find -L /system -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml")"
-  fi  
-  if $BOOTMODE; then SDCARD=/storage/emulated/0; else SDCARD=/data/media/0; fi
+  fi
 }
 
 ##########################################################################################

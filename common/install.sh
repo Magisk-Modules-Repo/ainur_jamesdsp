@@ -101,17 +101,18 @@ if [ $API -ge 26 ]; then
   rm -rf $INSTALLER/system/app
 fi
 ui_print "   Patching existing audio_effects files..."
-for FILE in ${CFGS}; do
-  cp_ch $ORIGDIR$FILE $UNITY$FILE
-  osp_detect $UNITY$FILE
+for OFILE in ${CFGS}; do
+  FILE="$UNITY$(echo $OFILE | sed "s|^/vendor|/system/vendor|g")"
+  cp_ch $ORIGDIR$OFILE $FILE
+  osp_detect $FILE
   case $FILE in
-    *.conf) sed -i "/jamesdsp {/,/}/d" $UNITY$FILE
-            sed -i "/jdsp {/,/}/d" $UNITY$FILE
-            sed -i "s/^effects {/effects {\n  jamesdsp { #$MODID\n    library jdsp\n    uuid f27317f4-c984-4de6-9a90-545759495bf2\n  } #$MODID/g" $UNITY$FILE
-            sed -i "s/^libraries {/libraries {\n  jdsp { #$MODID\n    path $LIBPATCH\/lib\/soundfx\/libjamesdsp.so\n  } #$MODID/g" $UNITY$FILE;;
-    *.xml) sed -i "/jamesdsp/d" $UNITY$FILE
-           sed -i "/jdsp/d" $UNITY$FILE
-           sed -i "/<libraries>/ a\        <library name=\"jdsp\" path=\"libjamesdsp.so\"\/><!--$MODID-->" $UNITY$FILE
-           sed -i "/<effects>/ a\        <effect name=\"jamesdsp\" library=\"jdsp\" uuid=\"f27317f4-c984-4de6-9a90-545759495bf2\"\/><!--$MODID-->" $UNITY$FILE;;
+    *.conf) sed -i "/jamesdsp {/,/}/d" $FILE
+            sed -i "/jdsp {/,/}/d" $FILE
+            sed -i "s/^effects {/effects {\n  jamesdsp { #$MODID\n    library jdsp\n    uuid f27317f4-c984-4de6-9a90-545759495bf2\n  } #$MODID/g" $FILE
+            sed -i "s/^libraries {/libraries {\n  jdsp { #$MODID\n    path $LIBPATCH\/lib\/soundfx\/libjamesdsp.so\n  } #$MODID/g" $FILE;;
+    *.xml) sed -i "/jamesdsp/d" $FILE
+           sed -i "/jdsp/d" $FILE
+           sed -i "/<libraries>/ a\        <library name=\"jdsp\" path=\"libjamesdsp.so\"\/><!--$MODID-->" $FILE
+           sed -i "/<effects>/ a\        <effect name=\"jamesdsp\" library=\"jdsp\" uuid=\"f27317f4-c984-4de6-9a90-545759495bf2\"\/><!--$MODID-->" $FILE;;
   esac
 done
