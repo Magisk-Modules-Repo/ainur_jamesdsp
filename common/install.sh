@@ -13,6 +13,19 @@ osp_detect() {
   esac
 }
 
+# Tell user aml is needed if applicable
+if $MAGISK; then
+  if $BOOTMODE; then LOC="/sbin/.core/img/*/system $MOUNTPATH/*/system"; else LOC="$MOUNTPATH/*/system"; fi
+  FILES=$(find $LOC -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml")
+  if [ ! -z "$FILES" ] && [ ! "$(echo $FILES | grep '/aml/')" ]; then
+    ui_print " "
+    ui_print "   ! Conflicting audio mod found!"
+    ui_print "   ! You will need to install !"
+    ui_print "   ! Audio Modification Library !"
+    sleep 3
+  fi
+fi
+
 # GET HQ/SQ FROM ZIP NAME
 case $(basename $ZIP) in
   *sq*|*Sq*|*SQ*) QUAL=sq;;
@@ -27,8 +40,8 @@ keytest() {
   ui_print "   Press Vol Up:"
   (/system/bin/getevent -lc 1 2>&1 | /system/bin/grep VOLUME | /system/bin/grep " DOWN" > $INSTALLER/events) || return 1
   return 0
-}   
-                                                                            
+}
+
 chooseport() {
   #note from chainfire @xda-developers: getevent behaves weird when piped, and busybox grep likes that even less than toolbox/toybox grep
   while (true); do
@@ -80,9 +93,9 @@ if [ -z $QUAL ]; then
   ui_print "- Select Driver -"
   ui_print "   Choose which drivers you want installed:"
   ui_print "   Vol Up = HQ, Vol Down = SQ"
-  if $FUNCTION; then 
+  if $FUNCTION; then
     QUAL=hq
-  else 
+  else
     QUAL=sq
   fi
 else
@@ -94,10 +107,19 @@ cp_ch $INSTALLER/custom/$ABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/
 # App only works when installed normally to data in oreo
 if [ $API -ge 26 ]; then
   cp -f $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
-  ui_print " "
-  ui_print "   JamesDSPManager.apk copied to root of internal storage (sdcard)"
-  ui_print "   Install manually after booting"
-  sleep 2
+  if $BOOTMODE; then
+    ui_print " "
+    ui_print "   Installing JamesDSPManager apk..."
+    pm install $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk >/dev/null 2>&1
+    ui_print "   JamesDSPManager.apk copied to root of internal storage (sdcard)"
+    ui_print "   Install manually if apk install didn't work"
+    sleep 2
+  else
+    ui_print " "
+    ui_print "   JamesDSPManager.apk copied to root of internal storage (sdcard)"
+    ui_print "   Install manually after booting"
+    sleep 2
+  fi
   rm -rf $INSTALLER/system/app
 fi
 ui_print "   Patching existing audio_effects files..."
