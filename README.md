@@ -7,6 +7,9 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.6.1 - 4.26.2018
+* Unity v1.5.3 update
+
 ### v1.6 - 4.16.2018
 * Unity v1.5.2 update
 * Add AML detection/notification
