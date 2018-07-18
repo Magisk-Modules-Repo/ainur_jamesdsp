@@ -13,6 +13,7 @@
 # DETECT WHETHER IN BOOT MODE
 ps | grep zygote | grep -v grep >/dev/null && BOOTMODE=true || BOOTMODE=false
 $BOOTMODE || ps -A 2>/dev/null | grep zygote | grep -v grep >/dev/null && BOOTMODE=true
+$BOOTMODE || id | grep -q 'uid=0' || BOOTMODE=true
 
 # TEMP INSTALLER PATH
 TMPDIR=/dev/tmp
@@ -205,7 +206,7 @@ unity_install() {
   done
   
   # PROP FILES - add prop function for system installs
-  $PROPFILE && prop_process $INSTALLER/common/system.prop
+  $PROPFILE && { prop_process $INSTALLER/common/system.prop; $MAGISK || echo $PROP >> $INFO; }
   
   # MODULE INFO
   cp_ch_nb $INSTALLER/module.prop $MOD_VER
