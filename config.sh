@@ -2,19 +2,18 @@
 #
 # Magisk Module Template Config Script
 # by topjohnwu
-# 
+#
 ##########################################################################################
 ##########################################################################################
-# 
+#
 # Instructions:
-# 
+#
 # 1. Place your files into system folder (delete the placeholder file)
 # 2. Fill in your module's info into module.prop
-# 3. Configure the settings in this file (common/config.sh)
-# 4. For advanced features, add shell commands into the script files under common:
-#    post-fs-data.sh, service.sh
-# 5. For changing props, add your additional/modified props into common/system.prop
-# 
+# 3. Configure the settings in this file (config.sh)
+# 4. If you need boot scripts, add them into common/post-fs-data.sh or common/service.sh
+# 5. Add your additional or modified system properties into common/system.prop
+#
 ##########################################################################################
 
 ##########################################################################################
@@ -41,11 +40,15 @@ LATESTARTSERVICE=false
 # Uncomment DYNAMICOREO if you want libs installed to vendor for oreo and newer and system for anything older
 # Uncomment DYNAMICAPP if you want anything in $INSTALLER/system/app to be installed to the optimal app directory (/system/priv-app if it exists, /system/app otherwise)
 # Uncomment SYSOVERRIDE if you want the mod to always be installed to system (even on magisk)
+# Uncomment RAMDISK if you have ramdisk modifications. If you only want ramdisk patching as part of a conditional, just keep this commented out and set RAMDISK=true in that conditional.
+# Uncomment DEBUG if you want full debug logs (saved to SDCARD if in twrp, part of regular log if in magisk manager (user will need to save log after flashing)
 #MINAPI=21
 #MAXAPI=25
 #SYSOVERRIDE=true
 DYNAMICOREO=true
 DYNAMICAPP=true
+#RAMDISK=true
+#DEBUG=true
 
 # Custom Variables - Keep everything within this function
 unity_custom() {
@@ -105,11 +108,11 @@ REPLACE="
 # NOTE: This part has to be adjusted to fit your own needs
 
 set_permissions() {
-  # DEFAULT PERMISSIONS, DON'T REMOVE THEM 
+  # DEFAULT PERMISSIONS, DON'T REMOVE THEM
   $MAGISK && set_perm_recursive $MODPATH 0 0 0755 0644
- 
+
   # CUSTOM PERMISSIONS
-  
+
   # Some templates if you have no idea what to do:
   # Note that all files/folders have the $UNITY prefix - keep this prefix on all of your files/folders
   # Also note the lack of '/' between variables - preceding slashes are already included in the variables
