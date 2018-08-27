@@ -92,7 +92,7 @@ if [ -z $QUAL ]; then
   ui_print " "
   ui_print "- Select Driver -"
   ui_print "   Choose which drivers you want installed:"
-  ui_print "   Vol Up = HQ, Vol Down = SQ"
+  ui_print "   Vol Up = HQ(64bit), Vol Down = SQ(32bit)"
   if $FUNCTION; then
     QUAL=hq
   else
@@ -102,8 +102,9 @@ else
   ui_print "   Driver quality specified in zipname!"
 fi
 
-cp_ch $INSTALLER/custom/$QUAL/$ABI/libjamesdsp.so $INSTALLER/system/lib/soundfx/libjamesdsp.so
-cp_ch $INSTALLER/custom/$ABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
+cp_ch_nb $INSTALLER/custom/$QUAL/$ABI/libjamesdsp.so $INSTALLER/system/lib/soundfx/libjamesdsp.so
+cp_ch_nb $INSTALLER/custom/$QUAL/$ABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
+cp_ch_nb $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk
 # App only works when installed normally to data in oreo
 if [ $API -ge 26 ]; then
   cp -f $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
