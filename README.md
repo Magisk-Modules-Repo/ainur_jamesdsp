@@ -7,6 +7,9 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.6.6 - 8.30.2018
+* Unity v1.6.1 update
+
 ### v1.6.5 - 8.26.2018
 * New JamesDSP build (Now supports HTC devices) 
 * Fixed bit depth problem from HTC and Android Pie

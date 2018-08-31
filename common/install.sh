@@ -102,9 +102,9 @@ else
   ui_print "   Driver quality specified in zipname!"
 fi
 
-cp_ch_nb $INSTALLER/custom/$QUAL/$ABI/libjamesdsp.so $INSTALLER/system/lib/soundfx/libjamesdsp.so
-cp_ch_nb $INSTALLER/custom/$QUAL/$ABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
-cp_ch_nb $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk
+cp_ch $INSTALLER/custom/$QUAL/$ABI/libjamesdsp.so $INSTALLER/system/lib/soundfx/libjamesdsp.so
+cp_ch $INSTALLER/custom/$QUAL/$ABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
+cp_ch $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk
 # App only works when installed normally to data in oreo
 if [ $API -ge 26 ]; then
   cp -f $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
@@ -126,7 +126,7 @@ fi
 ui_print "   Patching existing audio_effects files..."
 for OFILE in ${CFGS}; do
   FILE="$UNITY$(echo $OFILE | sed "s|^/vendor|/system/vendor|g")"
-  cp_ch_nb $ORIGDIR$OFILE $FILE 0644 false
+  cp_ch -nn $ORIGDIR$OFILE $FILE
   osp_detect $FILE
   case $FILE in
     *.conf) sed -i "/jamesdsp {/,/}/d" $FILE
