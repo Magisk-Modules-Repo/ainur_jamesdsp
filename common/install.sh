@@ -102,20 +102,24 @@ else
   ui_print "   Driver quality specified in zipname!"
 fi
 
+if [ "$QUAL" == "hq" ]; then
+  ui_print "   High Quality (64 bit) drivers selected!"
+else
+  ui_print "   Standard Quality (32 bit) drivers selected!"
+fi
+ui_print " "
+
+tar -xf $INSTALLER/custom/$QUAL.tar.xz -C $INSTALLER/custom 2>/dev/null
 cp_ch $INSTALLER/custom/$QUAL/$ABI/libjamesdsp.so $INSTALLER/system/lib/soundfx/libjamesdsp.so
 cp_ch $INSTALLER/custom/$QUAL/$ABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
 cp_ch $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk
 # App only works when installed normally to data in oreo
 if [ $API -ge 26 ]; then
-  cp -f $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
-  if $BOOTMODE; then
-    ui_print " "
-    ui_print "   Installing JamesDSPManager apk..."
-    pm install $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk >/dev/null 2>&1
-    ui_print "   JamesDSPManager.apk copied to root of internal storage (sdcard)"
-    ui_print "   Install manually if apk install didn't work"
-    sleep 2
+  if $MAGISK; then
+    install_script -l $INSTALLER/common/jdsp.sh
+    cp -f $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $UNITY/JamesDSPManager.apk
   else
+    cp -f $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
     ui_print " "
     ui_print "   JamesDSPManager.apk copied to root of internal storage (sdcard)"
     ui_print "   Install manually after booting"

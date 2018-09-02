@@ -1,5 +1,4 @@
-if [ $API -ge 26 ]; then
-  $BOOTMODE && { ui_print "   Uninstalling JamesDSPManager apk..."; pm uninstall james.dsp >/dev/null 2>&1; }
+if [ $API -ge 26 ] && ! $MAGISK; then
   rm -rf /data/app/james.dsp*
   rm -rf /data/data/james.dsp
   rm -f $SDCARD/JamesDSPManager.apk

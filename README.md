@@ -7,6 +7,11 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.6.7 - 9.2.2018
+* Unity v1.7 update
+* Added auto-install/uninstall of apk for magisk only (works for disable/enabling mod in magisk manager as well)
+* Add compression to save space/bandwidth
+
 ### v1.6.6 - 8.30.2018
 * Unity v1.6.1 update
 
