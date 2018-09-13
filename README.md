@@ -15,7 +15,7 @@ Otherwise, you will get quality problem and CPU overload
 
 ## Change Log
 ### v1.6.9 -9.13.2018
-* Updated JDSP to 9.13 release (adds huawei supported)
+* Updated JDSP to 9.13 release (adds huawei support, adds auto DDC resampler for device running on 96k sample rate or above, fixes some device volume issue caused by bit depth)
 
 ### v1.6.8 - 9.3.2018
 * Updated JDSP to 8.31 release
