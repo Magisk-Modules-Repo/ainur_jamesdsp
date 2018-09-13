@@ -109,9 +109,14 @@ else
 fi
 ui_print " "
 
+QABI=$ABI
+BRAND=$(grep_prop ro.product.manufacturer)
+[ "$BRAND" ] || BRAND=$(grep_prop ro.product.brand)
+[ "$BRAND" == "HUAWEI" -o "$BRAND" == "Huawei" -o "$BRAND" == "huawei" ] && QABI="huawei"
+
 tar -xf $INSTALLER/custom/$QUAL.tar.xz -C $INSTALLER/custom 2>/dev/null
-cp_ch $INSTALLER/custom/$QUAL/$ABI/libjamesdsp.so $INSTALLER/system/lib/soundfx/libjamesdsp.so
-cp_ch $INSTALLER/custom/$QUAL/$ABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
+cp_ch $INSTALLER/custom/$QUAL/$QABI/libjamesdsp.so $INSTALLER/system/lib/soundfx/libjamesdsp.so
+cp_ch $INSTALLER/custom/$QUAL/$QABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
 cp_ch $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk
 # App only works when installed normally to data in oreo
 if [ $API -ge 26 ]; then

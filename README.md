@@ -1,5 +1,12 @@
 # Ainur JamesDSPManager
 This module enables JamesDSPManager. [More details in support thread](https://forum.xda-developers.com/android/software/soundmod-ainur-audio-t3450516).
+## Special features:
+### HQ:
+Double precision(float64) processing
+### SQ:
+With virtual surround spatializer
+You device sample rate should process under 44.1k or 48k
+Otherwise, you will get quality problem and CPU overload
 
 ## Compatibility
 * Android Jellybean+
@@ -7,6 +14,9 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.6.9 -9.13.2018
+* Updated JDSP to 9.13 release (adds huawei supported)
+
 ### v1.6.8 - 9.3.2018
 * Updated JDSP to 8.31 release
 
