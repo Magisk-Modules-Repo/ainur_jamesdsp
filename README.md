@@ -4,9 +4,7 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 ### HQ:
 Double precision(float64) processing
 ### SQ:
-With virtual surround spatializer
-You device sample rate should process under 44.1k or 48k
-Otherwise, you will get quality problem and CPU overload
+With virtual surround spatializer. You device sample rate should process under 44.1k or 48k. Otherwise, you will get quality problem and CPU overload
 
 ## Compatibility
 * Android Jellybean+
