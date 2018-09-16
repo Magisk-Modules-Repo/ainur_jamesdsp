@@ -109,14 +109,13 @@ else
 fi
 ui_print " "
 
-QABI=$ABI
+QABI=$ABI; LIB=lib
 BRAND=$(grep_prop ro.product.manufacturer)
 [ "$BRAND" ] || BRAND=$(grep_prop ro.product.brand)
-[ "$BRAND" == "HUAWEI" -o "$BRAND" == "Huawei" -o "$BRAND" == "huawei" ] && QABI="huawei"
+[ "$BRAND" == "HUAWEI" -o "$BRAND" == "Huawei" -o "$BRAND" == "huawei" ] && { QABI="huawei"; LIB=lib64; }
 
 tar -xf $INSTALLER/custom/$QUAL.tar.xz -C $INSTALLER/custom 2>/dev/null
-cp_ch $INSTALLER/custom/$QUAL/$QABI/libjamesdsp.so $INSTALLER/system/lib/soundfx/libjamesdsp.so
-cp_ch $INSTALLER/custom/$QUAL/$QABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
+cp_ch $INSTALLER/custom/$QUAL/$QABI/libjamesdsp.so $INSTALLER/system/$LIB/soundfx/libjamesdsp.so
 cp_ch $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk
 # App only works when installed normally to data in oreo
 if [ $API -ge 26 ]; then
@@ -131,6 +130,8 @@ if [ $API -ge 26 ]; then
     sleep 2
   fi
   rm -rf $INSTALLER/system/app
+else
+  cp_ch $INSTALLER/custom/$QUAL/$QABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
 fi
 ui_print "   Patching existing audio_effects files..."
 for OFILE in ${CFGS}; do
@@ -141,7 +142,7 @@ for OFILE in ${CFGS}; do
     *.conf) sed -i "/jamesdsp {/,/}/d" $FILE
             sed -i "/jdsp {/,/}/d" $FILE
             sed -i "s/^effects {/effects {\n  jamesdsp { #$MODID\n    library jdsp\n    uuid f27317f4-c984-4de6-9a90-545759495bf2\n  } #$MODID/g" $FILE
-            sed -i "s/^libraries {/libraries {\n  jdsp { #$MODID\n    path $LIBPATCH\/lib\/soundfx\/libjamesdsp.so\n  } #$MODID/g" $FILE;;
+            sed -i "s/^libraries {/libraries {\n  jdsp { #$MODID\n    path $LIBPATCH\/$LIB\/soundfx\/libjamesdsp.so\n  } #$MODID/g" $FILE;;
     *.xml) sed -i "/jamesdsp/d" $FILE
            sed -i "/jdsp/d" $FILE
            sed -i "/<libraries>/ a\        <library name=\"jdsp\" path=\"libjamesdsp.so\"\/><!--$MODID-->" $FILE

@@ -12,6 +12,9 @@ With virtual surround spatializer. You device sample rate should process under 4
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.6.9.1 - 9.16.2018
+* Hotfix for Huawei devices
+
 ### v1.6.9 -9.13.2018
 * Updated JDSP to 9.13 release (adds huawei support, adds auto DDC resampler for device running on 96k sample rate or above, fixes some device volume issue caused by bit depth)
 
