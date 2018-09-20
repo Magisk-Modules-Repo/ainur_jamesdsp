@@ -110,9 +110,8 @@ fi
 ui_print " "
 
 QABI=$ABI; LIB=lib
-BRAND=$(grep_prop ro.product.manufacturer)
-[ "$BRAND" ] || BRAND=$(grep_prop ro.product.brand)
-[ "$BRAND" == "HUAWEI" -o "$BRAND" == "Huawei" -o "$BRAND" == "huawei" ] && { QABI="huawei"; LIB=lib64; }
+[ "$(grep -i "huawei" /system/build.prop)" -a "$(grep -i "emui" /system/build.prop)" ] && { QABI="huawei"; LIB=lib64; }
+[ "$QABI" = "huawei" ] && ui_print "   Huawei device detected!"
 
 tar -xf $INSTALLER/custom/$QUAL.tar.xz -C $INSTALLER/custom 2>/dev/null
 cp_ch $INSTALLER/custom/$QUAL/$QABI/libjamesdsp.so $INSTALLER/system/$LIB/soundfx/libjamesdsp.so

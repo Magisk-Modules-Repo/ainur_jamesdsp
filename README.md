@@ -12,6 +12,10 @@ With virtual surround spatializer. You device sample rate should process under 4
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.7 - 9.20.2018
+* Update to unity 1.7.1
+* Widen detection for huawei devices
+
 ### v1.6.9.1 - 9.16.2018
 * Hotfix for Huawei devices
 
