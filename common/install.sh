@@ -109,16 +109,18 @@ else
 fi
 ui_print " "
 
-QABI=$ABI; LIB=lib
-[ "$(grep -i "huawei" /system/build.prop)" -a "$(grep -i "emui" /system/build.prop)" ] && { QABI="huawei"; LIB=lib64; }
-[ "$QABI" = "huawei" ] && ui_print "   Huawei device detected!"
+case $ARCH in
+  "x64") QARCH="x86"; LIB=lib;;
+  "arm64") QARCH=$ARCH; LIB=lib64;;
+  *) QARCH=$ARCH; LIB=lib;;
+esac
 
 tar -xf $INSTALLER/custom/$QUAL.tar.xz -C $INSTALLER/custom 2>/dev/null
-cp_ch $INSTALLER/custom/$QUAL/$QABI/libjamesdsp.so $INSTALLER/system/$LIB/soundfx/libjamesdsp.so
+cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesdsp.so $INSTALLER/system/$LIB/soundfx/libjamesdsp.so
 cp_ch $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk
 # App only works when installed normally to data in oreo
 if [ $API -ge 26 ]; then
-  if $MAGISK; then
+  if $MAGISK && [ $API -lt 28 ]; then
     install_script -l $INSTALLER/common/jdsp.sh
     cp -f $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $UNITY/JamesDSPManager.apk
   else
@@ -130,7 +132,7 @@ if [ $API -ge 26 ]; then
   fi
   rm -rf $INSTALLER/system/app
 else
-  cp_ch $INSTALLER/custom/$QUAL/$QABI/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
+  cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
 fi
 ui_print "   Patching existing audio_effects files..."
 for OFILE in ${CFGS}; do
