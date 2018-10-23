@@ -9,7 +9,6 @@ if [ ! -d "$UNITY/$MODID" ]; then
     rm -rf /data/data/james.dsp
   fi
   rm $0
-  [ "$SELINUX" == "Enforcing" ] && setenforce 1
   exit 0
 elif [ "$(find /data/app -type d -name "james.dsp*")" ]; then
   pm list packages -d
