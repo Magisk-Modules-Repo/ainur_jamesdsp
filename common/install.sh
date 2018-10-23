@@ -120,7 +120,7 @@ cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesdsp.so $INSTALLER/system/$LIB/sound
 cp_ch $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk
 # App only works when installed normally to data in oreo
 if [ $API -ge 26 ]; then
-  if $MAGISK && [ $API -lt 28 ]; then
+  if $MAGISK; then
     install_script -l $INSTALLER/common/jdsp.sh
     cp -f $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $UNITY/JamesDSPManager.apk
   else

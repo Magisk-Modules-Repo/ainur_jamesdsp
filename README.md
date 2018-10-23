@@ -12,6 +12,9 @@ With virtual surround spatializer. You device sample rate should process under 4
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.7.2 - 10.23.2018
+* Fixed awesome boot script for pie - magisk apk stuff is automated once again :)
+
 ### v1.7.1 - 10.22.2018
 * Fix boot hanging on Pie roms
 
