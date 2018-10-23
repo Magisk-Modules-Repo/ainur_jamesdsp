@@ -1,7 +1,5 @@
 #!/system/bin/sh
 MODID=<MODID>
-SELINUX=$(getenforce)
-[ "$SELINUX" == "Enforcing" ] && setenforce 0
 if [ ! -d "$UNITY/$MODID" ]; then
   if [ "$(find /data/app -type d -name "james.dsp*")" ]; then
     pm uninstall james.dsp
@@ -32,4 +30,3 @@ elif [ ! -f "$UNITY/$MODID/disable" ] && [ ! "$(find /data/app -type d -name "ja
   pm disable james.dsp
   pm enable james.dsp
 fi
-[ "$SELINUX" == "Enforcing" ] && setenforce 1
