@@ -109,11 +109,11 @@ else
 fi
 ui_print " "
 
-case $ARCH in
-  "x64") QARCH="x86"; LIB=lib;;
-  "arm64") QARCH=$ARCH; LIB=lib64;;
-  *) QARCH=$ARCH; LIB=lib;;
+case $ARCH32 in
+  "x86") QARCH="x86"; LIB=lib;;
+  *) QARCH=$ARCH32; LIB=lib;;
 esac
+[ "$(grep -i "huawei" /system/build.prop)" -a "$(grep -i "emui" /system/build.prop)" ] && { QARCH="arm64"; LIB=lib64; ui_print "   Huawei device detected!"; }
 
 tar -xf $INSTALLER/custom/$QUAL.tar.xz -C $INSTALLER/custom 2>/dev/null
 cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesdsp.so $INSTALLER/system/$LIB/soundfx/libjamesdsp.so
