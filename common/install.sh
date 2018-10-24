@@ -113,12 +113,13 @@ case $ARCH32 in
   "x86") QARCH="x86"; LIB=lib;;
   *) QARCH=$ARCH32; LIB=lib;;
 esac
-[ "$(grep -i "huawei" /system/build.prop)" -a "$(grep -i "emui" /system/build.prop)" ] && { QARCH="arm64"; LIB=lib64; ui_print "   Huawei device detected!"; }
+if [ -f $VEN/build.prop ]; then BUILDS="/system/build.prop $VEN/build.prop"; else BUILDS="/system/build.prop"; fi
+[ "$(grep -i "ro.product.device=hi.*" $BUILDS)" -o "$(grep -i "ro.build.product=hi.*" $BUILDS)" ] && { QARCH="arm64"; LIB=lib64; ui_print "   Huawei device detected!"; }
 
 tar -xf $INSTALLER/custom/$QUAL.tar.xz -C $INSTALLER/custom 2>/dev/null
 cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesdsp.so $INSTALLER/system/$LIB/soundfx/libjamesdsp.so
 cp_ch $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk
-# App only works when installed normally to data in oreo
+# App only works when installed normally to data in oreo+
 if [ $API -ge 26 ]; then
   if $MAGISK; then
     install_script -l $INSTALLER/common/jdsp.sh
