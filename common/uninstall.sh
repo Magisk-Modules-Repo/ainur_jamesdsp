@@ -1,5 +1,9 @@
-if [ $API -ge 26 ] && ! $MAGISK; then
-  rm -rf /data/app/james.dsp*
+if [ $API -ge 26 ]; then
+  if $BOOTMODE && $MAGISK; then
+    pm uninstall james.dsp
+  else
+    rm -rf /data/app/james.dsp* 
+  fi
   rm -rf /data/data/james.dsp
   rm -f $SDCARD/JamesDSPManager.apk
 fi
