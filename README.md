@@ -13,7 +13,7 @@ With virtual surround spatializer. You device sample rate should process under 4
 
 ## Change Log
 ### v1.7.3 - 10.24.2018
-* Unity v1.7.3 update
+* Unity v1.7.2 update
 * Bug fix for arm64 devices
 * Bug fixes for huawei devices
 
