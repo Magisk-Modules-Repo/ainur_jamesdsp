@@ -26,10 +26,14 @@ if $MAGISK && ! $SYSOVERRIDE; then
   fi
 fi
 
-# GET HQ/SQ FROM ZIP NAME
+# GET HQ/SQ AND HUAWEI FROM ZIP NAME
 case $(basename $ZIP) in
   *sq*|*Sq*|*SQ*) QUAL=sq;;
   *hq*|*Hq*|*HQ*) QUAL=hq;;
+esac
+case $(basename $ZIP) in
+  *HUA*|*Hua*|*hua*) HUAWEI=true;;
+  *NHUA*|*Nhua*|*nhua*) HUAWEI=false;;
 esac
 
 # Keycheck binary by someone755 @Github, idea for code below by Zappo @xda-developers
@@ -76,7 +80,7 @@ chooseportold() {
   fi
 }
 ui_print " "
-if [ -z $QUAL ]; then
+if [ -z $QUAL ] || [ -z $HUAWEI ]; then
   if keytest; then
     FUNCTION=chooseport
   else
@@ -89,17 +93,34 @@ if [ -z $QUAL ]; then
     ui_print "   Press Vol Down"
     $FUNCTION "DOWN"
   fi
-  ui_print " "
-  ui_print "- Select Driver -"
-  ui_print "   Choose which drivers you want installed:"
-  ui_print "   Vol Up = HQ(64bit), Vol Down = SQ(32bit)"
-  if $FUNCTION; then
-    QUAL=hq
+  if [ -z $QUAL ]; then
+    ui_print " "
+    ui_print "- Select Driver -"
+    ui_print "   Choose which drivers you want installed:"
+    ui_print "   Vol Up = HQ(64bit), Vol Down = SQ(32bit)"
+    if $FUNCTION; then
+      QUAL=hq
+    else
+      QUAL=sq
+    fi
   else
-    QUAL=sq
+    ui_print "   Driver quality specified in zipname!"
+  fi
+  if [ -z $HUAWEI ]; then
+    ui_print " "
+    ui_print "- Select Huawei -"
+    ui_print "   Is this a Huawei device?"
+    ui_print "   Vol Up = Yes, Vol Down = No"
+    if $FUNCTION; then
+      HUAWEI=true
+    else
+      HUAWEI=false
+    fi
+  else
+    ui_print "   Driver quality specified in zipname!"
   fi
 else
-  ui_print "   Driver quality specified in zipname!"
+  ui_print "   Options specified in zipname!"
 fi
 
 if [ "$QUAL" == "hq" ]; then
@@ -107,13 +128,12 @@ if [ "$QUAL" == "hq" ]; then
 else
   ui_print "   Standard Quality (32 bit) drivers selected!"
 fi
-ui_print " "
-
-QARCH=$ARCH32
-if [ -f $VEN/build.prop ]; then BUILDS="/system/build.prop $VEN/build.prop"; else BUILDS="/system/build.prop"; fi
 
 tar -xf $INSTALLER/custom/$QUAL.tar.xz -C $INSTALLER/custom 2>/dev/null
-[ "$(grep -i "ro.product.device=hi.*" $BUILDS)" -o "$(grep -i "ro.build.product=hi.*" $BUILDS)" ] && { QARCH="huawei"; ui_print "   Huawei device detected!"; cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesdsp.so $INSTALLER/system/lib64/soundfx/libjamesdsp.so; }
+QARCH=$ARCH32
+$HUAWEI && { QARCH="huawei"; ui_print "   Huawei device selected!"; cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesdsp.so $INSTALLER/system/lib64/soundfx/libjamesdsp.so; }
+
+ui_print " "
 
 cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesdsp.so $INSTALLER/system/lib/soundfx/libjamesdsp.so
 cp_ch $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk
