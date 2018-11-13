@@ -12,6 +12,8 @@ With virtual surround spatializer. You device sample rate should process under 4
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.7.5 - 11.8.2018
+* Add libstdc++ workaround for pixel 2's, 3's, and essential phone
 
 ### v1.7.4 - 10.29.2018
 * Switch to manual huawei selection - too much variation with custom roms for consistent huawei device detection

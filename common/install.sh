@@ -153,6 +153,16 @@ if [ $API -ge 26 ]; then
 else
   cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
 fi
+
+# Lib fix for pixel 2's, 3's, and essential phone
+if device_check "walleye" || device_check "taimen" || device_check "crosshatch" || device_check "blueline" || device_check "mata"; then
+  if [ -f /system/lib/libstdc++.so ] && [ ! -f $VEN/lib/libstdc++.so ]; then
+    cp_ch /system/lib/libstdc++.so $UNITY$VEN/lib/libstdc++.so
+  elif [ -f $VEN/lib/libstdc++.so ] && [ ! -f /system/lib/libstdc++.so ]; then
+    cp_ch $VEN/lib/libstdc++.so $UNITY/system/lib/libstdc++.so
+  fi
+fi
+
 ui_print "   Patching existing audio_effects files..."
 for OFILE in ${CFGS}; do
   FILE="$UNITY$(echo $OFILE | sed "s|^/vendor|/system/vendor|g")"
