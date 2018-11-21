@@ -97,7 +97,8 @@ if [ -z $QUAL ] || [ -z $HUAWEI ]; then
     ui_print " "
     ui_print "- Select Driver -"
     ui_print "   Choose which drivers you want installed:"
-    ui_print "   Vol Up = HQ(64bit), Vol Down = SQ(32bit)"
+    ui_print "   Vol Up = HQ (Slow, bit perfect)"
+    ui_print "   Vol Down = SQ (Fast, full feature)"
     if $FUNCTION; then
       QUAL=hq
     else
@@ -124,9 +125,9 @@ else
 fi
 
 if [ "$QUAL" == "hq" ]; then
-  ui_print "   High Quality (64 bit) drivers selected!"
+  ui_print "   High Quality drivers selected!"
 else
-  ui_print "   Standard Quality (32 bit) drivers selected!"
+  ui_print "   Standard Quality drivers selected!"
 fi
 
 tar -xf $INSTALLER/custom/$QUAL.tar.xz -C $INSTALLER/custom 2>/dev/null
