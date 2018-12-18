@@ -12,6 +12,11 @@ With virtual surround spatializer. You device sample rate should process under 4
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.9 - 12.18.2018
+* Unity v2.0 update
+* Fixed limitation in zipname triggers - you can use spaces in the zipname now and trigger is case insensitive
+* Improved boot script for user app install - should fix bootloop issues
+
 ### v1.8 - 11.21.2018
 * Updated JDSP to 11.20.18 release (Change FFT to slower but a commercial friendly implementation, Improve TruCentre separation, Reduce TruCentre latency to 21 ms(from 32 ms), Fix arbitrary response equalizer memory leaks)
 

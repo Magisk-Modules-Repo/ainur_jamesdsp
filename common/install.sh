@@ -27,14 +27,16 @@ if $MAGISK && ! $SYSOVERRIDE; then
 fi
 
 # GET HQ/SQ AND HUAWEI FROM ZIP NAME
-case $(basename $ZIP) in
-  *sq*|*Sq*|*SQ*) QUAL=sq;;
-  *hq*|*Hq*|*HQ*) QUAL=hq;;
+OIFS=$IFS; IFS=\|
+case $(echo $(basename $ZIP) | tr '[:upper:]' '[:lower:]') in
+  *sq*) QUAL=sq;;
+  *hq*) QUAL=hq;;
 esac
-case $(basename $ZIP) in
-  *HUA*|*Hua*|*hua*) HUAWEI=true;;
-  *NHUA*|*Nhua*|*nhua*) HUAWEI=false;;
+case $(echo $(basename $ZIP) | tr '[:upper:]' '[:lower:]') in
+  *HUA*) HUAWEI=true;;
+  *NHUA*) HUAWEI=false;;
 esac
+IFS=$OIFS
 
 # Keycheck binary by someone755 @Github, idea for code below by Zappo @xda-developers
 chmod 755 $INSTALLER/common/keycheck
@@ -48,7 +50,7 @@ keytest() {
 
 chooseport() {
   #note from chainfire @xda-developers: getevent behaves weird when piped, and busybox grep likes that even less than toolbox/toybox grep
-  while (true); do
+  while true; do
     /system/bin/getevent -lc 1 2>&1 | /system/bin/grep VOLUME | /system/bin/grep " DOWN" > $INSTALLER/events
     if (`cat $INSTALLER/events 2>/dev/null | /system/bin/grep VOLUME >/dev/null`); then
       break
@@ -156,7 +158,7 @@ else
 fi
 
 # Lib fix for pixel 2's, 3's, and essential phone
-if device_check "walleye" || device_check "taimen" || device_check "crosshatch" || device_check "blueline" || device_check "mata"; then
+if device_check "walleye" || device_check "taimen" || device_check "crosshatch" || device_check "blueline" || device_check "mata" || device_check "jasmine"; then
   if [ -f /system/lib/libstdc++.so ] && [ ! -f $VEN/lib/libstdc++.so ]; then
     cp_ch /system/lib/libstdc++.so $UNITY$VEN/lib/libstdc++.so
   elif [ -f $VEN/lib/libstdc++.so ] && [ ! -f /system/lib/libstdc++.so ]; then

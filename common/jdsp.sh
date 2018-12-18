@@ -1,10 +1,10 @@
 #!/system/bin/sh
 MODID=<MODID>
-pm list packages -3
-while [ $? -ne 0 ]; do
+(
+while [ $(getprop sys.boot_completed) -ne 1 ] || [ "$(getprop init.svc.bootanim | tr '[:upper:]' '[:lower:]')" != "stopped" ]; do
   sleep 1
-  pm list packages -3
 done
+
 APP=$(pm list packages -3 | grep james.dsp)
 
 if [ ! -d "$UNITY/$MODID" ]; then
@@ -23,10 +23,7 @@ elif [ "$APP" ]; then
   fi
 elif [ ! -f "$UNITY/$MODID/disable" ] && [ ! "$APP" ]; then
   pm install $UNITY/$MODID/JamesDSPManager.apk
-  while [ $? -ne 0 ]; do
-    sleep 1
-    pm install $UNITY/$MODID/JamesDSPManager.apk
-  done
   pm disable james.dsp
   pm enable james.dsp
 fi
+)&
