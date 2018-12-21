@@ -12,6 +12,11 @@ With virtual surround spatializer. You device sample rate should process under 4
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.9.1 - 12.20.2018
+* Fixed hua/nhua zipname trigger
+* Fix lib workaround
+* Update to Unity v2.1
+
 ### v1.9 - 12.18.2018
 * Unity v2.0 update
 * Fixed limitation in zipname triggers - you can use spaces in the zipname now and trigger is case insensitive
