@@ -33,8 +33,8 @@ case $(echo $(basename $ZIP) | tr '[:upper:]' '[:lower:]') in
   *hq*) QUAL=hq;;
 esac
 case $(echo $(basename $ZIP) | tr '[:upper:]' '[:lower:]') in
-  *hua*) HUAWEI=true;;
   *nhua*) HUAWEI=false;;
+  *hua*) HUAWEI=true;;
 esac
 IFS=$OIFS
 
