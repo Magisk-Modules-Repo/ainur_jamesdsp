@@ -38,12 +38,9 @@ case $(echo $(basename $ZIP) | tr '[:upper:]' '[:lower:]') in
 esac
 IFS=$OIFS
 
-# Keycheck binary by someone755 @Github, idea for code below by Zappo @xda-developers
-chmod 755 $INSTALLER/common/keycheck
-
 keytest() {
-  ui_print "- Vol Key Test -"
-  ui_print "   Press Vol Up:"
+  ui_print " - Vol Key Test -"
+  ui_print "   Press a Vol Key:"
   (/system/bin/getevent -lc 1 2>&1 | /system/bin/grep VOLUME | /system/bin/grep " DOWN" > $INSTALLER/events) || return 1
   return 0
 }
@@ -64,9 +61,10 @@ chooseport() {
 }
 
 chooseportold() {
+  # Keycheck binary by someone755 @Github, idea for code below by Zappo @xda-developers
   # Calling it first time detects previous input. Calling it second time will do what we want
-  $INSTALLER/common/keycheck
-  $INSTALLER/common/keycheck
+  keycheck
+  keycheck
   SEL=$?
   if [ "$1" == "UP" ]; then
     UP=$SEL
@@ -81,6 +79,7 @@ chooseportold() {
     abort "   Use name change method in TWRP"
   fi
 }
+
 ui_print " "
 if [ -z $QUAL ] || [ -z $HUAWEI ]; then
   if keytest; then
