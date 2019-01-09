@@ -28,11 +28,11 @@ fi
 
 # GET HQ/SQ AND HUAWEI FROM ZIP NAME
 OIFS=$IFS; IFS=\|
-case $(echo $(basename $ZIP) | tr '[:upper:]' '[:lower:]') in
+case $(echo $(basename $ZIPFILE) | tr '[:upper:]' '[:lower:]') in
   *sq*) QUAL=sq;;
   *hq*) QUAL=hq;;
 esac
-case $(echo $(basename $ZIP) | tr '[:upper:]' '[:lower:]') in
+case $(echo $(basename $ZIPFILE) | tr '[:upper:]' '[:lower:]') in
   *nhua*) HUAWEI=false;;
   *hua*) HUAWEI=true;;
 esac
