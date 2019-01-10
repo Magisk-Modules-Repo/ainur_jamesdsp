@@ -15,7 +15,7 @@ osp_detect() {
 
 # Tell user aml is needed if applicable
 if $MAGISK && ! $SYSOVERRIDE; then
-  if $BOOTMODE; then LOC="/sbin/.core/img/*/system $MOUNTPATH/*/system"; else LOC="$MOUNTPATH/*/system"; fi
+  if $BOOTMODE; then LOC="$MAGISKTMP/img/*/system $MOUNTPATH/*/system"; else LOC="$MOUNTPATH/*/system"; fi
   FILES=$(find $LOC -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml" 2>/dev/null)
   if [ ! -z "$FILES" ] && [ ! "$(echo $FILES | grep '/aml/')" ]; then
     ui_print " "
@@ -168,7 +168,7 @@ fi
 ui_print "   Patching existing audio_effects files..."
 for OFILE in ${CFGS}; do
   FILE="$UNITY$(echo $OFILE | sed "s|^/vendor|/system/vendor|g")"
-  cp_ch -nn $ORIGDIR$OFILE $FILE
+  cp_ch -i $ORIGDIR$OFILE $FILE
   osp_detect $FILE
   case $FILE in
     *.conf) sed -i "/jamesdsp {/,/}/d" $FILE

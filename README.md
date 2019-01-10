@@ -12,6 +12,9 @@ With virtual surround spatializer. You device sample rate should process under 4
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.9.4 - 1.10.2019
+* Unity v3.1 update
+
 ### v1.9.3 - 1.5.2019
 * Unity v3.0 update
 
