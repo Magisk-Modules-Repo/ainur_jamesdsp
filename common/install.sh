@@ -29,8 +29,8 @@ fi
 # GET HQ/SQ AND HUAWEI FROM ZIP NAME
 OIFS=$IFS; IFS=\|
 case $(echo $(basename $ZIPFILE) | tr '[:upper:]' '[:lower:]') in
-  *sq*) QUAL=sq;;
-  *hq*) QUAL=hq;;
+  *ff*) QUAL=ff;;
+  *bp*) QUAL=bp;;
 esac
 case $(echo $(basename $ZIPFILE) | tr '[:upper:]' '[:lower:]') in
   *nhua*) HUAWEI=false;;
@@ -38,72 +38,17 @@ case $(echo $(basename $ZIPFILE) | tr '[:upper:]' '[:lower:]') in
 esac
 IFS=$OIFS
 
-keytest() {
-  ui_print " - Vol Key Test -"
-  ui_print "   Press a Vol Key:"
-  (/system/bin/getevent -lc 1 2>&1 | /system/bin/grep VOLUME | /system/bin/grep " DOWN" > $INSTALLER/events) || return 1
-  return 0
-}
-
-chooseport() {
-  #note from chainfire @xda-developers: getevent behaves weird when piped, and busybox grep likes that even less than toolbox/toybox grep
-  while true; do
-    /system/bin/getevent -lc 1 2>&1 | /system/bin/grep VOLUME | /system/bin/grep " DOWN" > $INSTALLER/events
-    if (`cat $INSTALLER/events 2>/dev/null | /system/bin/grep VOLUME >/dev/null`); then
-      break
-    fi
-  done
-  if (`cat $INSTALLER/events 2>/dev/null | /system/bin/grep VOLUMEUP >/dev/null`); then
-    return 0
-  else
-    return 1
-  fi
-}
-
-chooseportold() {
-  # Keycheck binary by someone755 @Github, idea for code below by Zappo @xda-developers
-  # Calling it first time detects previous input. Calling it second time will do what we want
-  keycheck
-  keycheck
-  SEL=$?
-  if [ "$1" == "UP" ]; then
-    UP=$SEL
-  elif [ "$1" == "DOWN" ]; then
-    DOWN=$SEL
-  elif [ $SEL -eq $UP ]; then
-    return 0
-  elif [ $SEL -eq $DOWN ]; then
-    return 1
-  else
-    ui_print "   Vol key not detected!"
-    abort "   Use name change method in TWRP"
-  fi
-}
-
 ui_print " "
 if [ -z $QUAL ] || [ -z $HUAWEI ]; then
-  if keytest; then
-    FUNCTION=chooseport
-  else
-    FUNCTION=chooseportold
-    ui_print "   ! Legacy device detected! Using old keycheck method"
-    ui_print " "
-    ui_print "- Vol Key Programming -"
-    ui_print "   Press Vol Up Again:"
-    $FUNCTION "UP"
-    ui_print "   Press Vol Down"
-    $FUNCTION "DOWN"
-  fi
   if [ -z $QUAL ]; then
-    ui_print " "
     ui_print "- Select Driver -"
     ui_print "   Choose which drivers you want installed:"
-    ui_print "   Vol Up = HQ (Slow, bit perfect)"
-    ui_print "   Vol Down = SQ (Fast, full feature)"
-    if $FUNCTION; then
-      QUAL=hq
+    ui_print "   Vol Down = Full feature (Highly recommended)"
+    ui_print "   Vol Up = Bit perfect"
+    if $VKSEL; then
+      QUAL=ff
     else
-      QUAL=sq
+      QUAL=bp
     fi
   else
     ui_print "   Driver quality specified in zipname!"
@@ -113,7 +58,7 @@ if [ -z $QUAL ] || [ -z $HUAWEI ]; then
     ui_print "- Select Huawei -"
     ui_print "   Is this a Huawei device?"
     ui_print "   Vol Up = Yes, Vol Down = No"
-    if $FUNCTION; then
+    if $VKSEL; then
       HUAWEI=true
     else
       HUAWEI=false
@@ -125,10 +70,10 @@ else
   ui_print "   Options specified in zipname!"
 fi
 
-if [ "$QUAL" == "hq" ]; then
-  ui_print "   High Quality drivers selected!"
+if [ "$QUAL" == "ff" ]; then
+  ui_print "   Full feature drivers selected!"
 else
-  ui_print "   Standard Quality drivers selected!"
+  ui_print "   Bit perfect drivers selected!"
 fi
 
 tar -xf $INSTALLER/custom/$QUAL.tar.xz -C $INSTALLER/custom 2>/dev/null

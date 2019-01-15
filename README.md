@@ -1,10 +1,10 @@
 # Ainur JamesDSPManager
 This module enables JamesDSPManager. [More details in support thread](https://forum.xda-developers.com/android/software/soundmod-ainur-audio-t3450516).
 ## Special features:
-### HQ:
-Double precision(float64) processing
-### SQ:
-With virtual surround spatializer. You device sample rate should process under 44.1k or 48k. Otherwise, you will get quality problem and CPU overload
+### Full featured:
+Standard JDSP library. Highly recommend
+### Bit Perfect:
+Double precision (float64) processing. Note that some features are missing from this one like trusurround (virtual surround spatializer
 
 ## Compatibility
 * Android Jellybean+
@@ -12,6 +12,9 @@ With virtual surround spatializer. You device sample rate should process under 4
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.9.6 - 1.15.2019
+* Unity v3.2 update
+
 ### v1.9.5 - 1.11.2019
 * Unity hotfix
 
