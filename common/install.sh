@@ -43,8 +43,8 @@ if [ -z $QUAL ] || [ -z $HUAWEI ]; then
   if [ -z $QUAL ]; then
     ui_print "- Select Driver -"
     ui_print "   Choose which drivers you want installed:"
-    ui_print "   Vol Down = Full feature (Highly recommended)"
-    ui_print "   Vol Up = Bit perfect"
+    ui_print "   Vol Up = Full feature (Highly recommended)"
+    ui_print "   Vol Down = Bit perfect"
     if $VKSEL; then
       QUAL=ff
     else
