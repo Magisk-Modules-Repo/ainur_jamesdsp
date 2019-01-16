@@ -83,20 +83,20 @@ $HUAWEI && { QARCH="huawei"; ui_print "   Huawei device selected!"; cp_ch $INSTA
 ui_print " "
 
 cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesdsp.so $INSTALLER/system/lib/soundfx/libjamesdsp.so
-cp_ch $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk
+cp_ch $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/priv-app/JamesDSPManager/JamesDSPManager.apk
 # App only works when installed normally to data in oreo+
 if [ $API -ge 26 ]; then
   if $MAGISK; then
     install_script -l $INSTALLER/common/jdsp.sh
-    cp -f $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $UNITY/JamesDSPManager.apk
+    cp -f $INSTALLER/system/priv-app/JamesDSPManager/JamesDSPManager.apk $UNITY/JamesDSPManager.apk
   else
-    cp -f $INSTALLER/system/app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
+    cp -f $INSTALLER/system/priv-app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
     ui_print " "
     ui_print "   JamesDSPManager.apk copied to root of internal storage (sdcard)"
     ui_print "   Install manually after booting"
     sleep 2
   fi
-  rm -rf $INSTALLER/system/app
+  rm -rf $INSTALLER/system/priv-app
 else
   cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
 fi
