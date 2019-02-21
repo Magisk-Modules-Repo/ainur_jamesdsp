@@ -36,10 +36,14 @@ case $(echo $(basename $ZIPFILE) | tr '[:upper:]' '[:lower:]') in
   *nhua*) HUAWEI=false;;
   *hua*) HUAWEI=true;;
 esac
+case $(echo $(basename $ZIPFILE) | tr '[:upper:]' '[:lower:]') in
+  *lib*) LIBWA=true;;
+  *nlib*) LIBWA=false;;
+esac
 IFS=$OIFS
 
 ui_print " "
-if [ -z $QUAL ] || [ -z $HUAWEI ]; then
+if [ -z $QUAL ] || [ -z $HUAWEI ] || [ -z $LIBWA ]; then
   if [ -z $QUAL ]; then
     ui_print "- Select Driver -"
     ui_print "   Choose which drivers you want installed:"
@@ -65,6 +69,19 @@ if [ -z $QUAL ] || [ -z $HUAWEI ]; then
     fi
   else
     ui_print "   Driver quality specified in zipname!"
+  fi
+  if [ -z $LIBWA ]; then
+    ui_print " "
+    ui_print " - Use lib workaround? -"
+    ui_print "   Only choose yes if you're having issues"
+    ui_print "   Vol+ = yes, Vol- = no (recommended)"
+    if $VKSEL; then
+      LIBWA=true
+    else
+      LIBWA=false
+    fi
+  else
+    ui_print "   Lib workaround option specified in zipname!"
   fi
 else
   ui_print "   Options specified in zipname!"
@@ -102,7 +119,8 @@ else
 fi
 
 # Lib fix for pixel 2's, 3's, and essential phone
-if device_check "walleye" || device_check "taimen" || device_check "crosshatch" || device_check "blueline" || device_check "mata" || device_check "jasmine"; then
+if $LIBWA || device_check "walleye" || device_check "taimen" || device_check "crosshatch" || device_check "blueline" || device_check "mata" || device_check "jasmine" || device_check "star2lte" || device_check "z2_row"; then
+  ui_print "   Applying lib workaround..."
   if [ -f $ORIGDIR/system/lib/libstdc++.so ] && [ ! -f $ORIGVEN/lib/libstdc++.so ]; then
     cp_ch $ORIGDIR/system/lib/libstdc++.so $UNITY$VEN/lib/libstdc++.so
   elif [ -f $ORIGVEN/lib/libstdc++.so ] && [ ! -f $ORIGDIR/system/lib/libstdc++.so ]; then
