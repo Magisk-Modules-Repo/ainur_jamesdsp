@@ -5,7 +5,7 @@ done
 
 APP=$(pm list packages -3 | grep james.dsp)
 
-if [ ! -d "$UNITY" ]; then
+if [ ! -d "$MODPATH" ]; then
   if [ "$APP" ]; then
     pm uninstall james.dsp
     rm -rf /data/data/james.dsp
@@ -14,13 +14,13 @@ if [ ! -d "$UNITY" ]; then
   exit 0
 elif [ "$APP" ]; then
   STATUS="$(pm list packages -d | grep 'james.dsp')"
-  if [ -f "$UNITY/disable" ] && [ ! "$STATUS" ]; then
+  if [ -f "$MODPATH/disable" ] && [ ! "$STATUS" ]; then
     pm disable james.dsp
-  elif [ ! -f "$UNITY/disable" ] && [ "$STATUS" ]; then
+  elif [ ! -f "$MODPATH/disable" ] && [ "$STATUS" ]; then
     pm enable james.dsp
   fi
-elif [ ! -f "$UNITY/disable" ] && [ ! "$APP" ]; then
-  pm install $UNITY/JamesDSPManager.apk
+elif [ ! -f "$MODPATH/disable" ] && [ ! "$APP" ]; then
+  pm install $MODPATH/JamesDSPManager.apk
   pm disable james.dsp
   pm enable james.dsp
 fi

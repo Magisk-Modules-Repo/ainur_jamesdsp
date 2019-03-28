@@ -14,8 +14,8 @@ osp_detect() {
 }
 
 # Tell user aml is needed if applicable
-if $MAGISK && ! $SYSOVERRIDE; then
-  if $BOOTMODE; then LOC="$MAGISKTMP/img/*/system $MOUNTPATH/*/system"; else LOC="$MOUNTPATH/*/system"; fi
+if $MAGISK && ! $SYSOVER; then
+  if $BOOTMODE; then LOC="$MOUNTEDROOT/*/system $MODULEROOT/*/system"; else LOC="$MODULEROOT/*/system"; fi
   FILES=$(find $LOC -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml" 2>/dev/null)
   if [ ! -z "$FILES" ] && [ ! "$(echo $FILES | grep '/aml/')" ]; then
     ui_print " "
@@ -41,6 +41,11 @@ case $(echo $(basename $ZIPFILE) | tr '[:upper:]' '[:lower:]') in
   *nlib*) LIBWA=false;;
 esac
 IFS=$OIFS
+
+# Check for devices that need lib workaround
+if device_check "walleye" || device_check "taimen" || device_check "crosshatch" || device_check "blueline" || device_check "mata" || device_check "jasmine" || device_check "star2lte" || device_check "z2_row"; then
+  LIBWA=true
+fi
 
 ui_print " "
 if [ -z $QUAL ] || [ -z $HUAWEI ] || [ -z $LIBWA ]; then
@@ -93,33 +98,33 @@ else
   ui_print "   Bit perfect drivers selected!"
 fi
 
-tar -xf $INSTALLER/custom/$QUAL.tar.xz -C $INSTALLER/custom 2>/dev/null
+tar -xf $TMPDIR/custom/$QUAL.tar.xz -C $TMPDIR/custom 2>/dev/null
 QARCH=$ARCH32
-$HUAWEI && { QARCH="huawei"; ui_print "   Huawei device selected!"; cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesdsp.so $INSTALLER/system/lib64/soundfx/libjamesdsp.so; }
+$HUAWEI && { QARCH="huawei"; ui_print "   Huawei device selected!"; cp_ch $TMPDIR/custom/$QUAL/$QARCH/libjamesdsp.so $TMPDIR/system/lib64/soundfx/libjamesdsp.so; }
 
 ui_print " "
 
-cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesdsp.so $INSTALLER/system/lib/soundfx/libjamesdsp.so
-cp_ch $INSTALLER/custom/$QUAL/JamesDSPManager.apk $INSTALLER/system/priv-app/JamesDSPManager/JamesDSPManager.apk
+cp_ch $TMPDIR/custom/$QUAL/$QARCH/libjamesdsp.so $TMPDIR/system/lib/soundfx/libjamesdsp.so
+cp_ch $TMPDIR/custom/$QUAL/JamesDSPManager.apk $TMPDIR/system/priv-app/JamesDSPManager/JamesDSPManager.apk
 # App only works when installed normally to data in oreo+
 if [ $API -ge 26 ]; then
   if $MAGISK; then
-    install_script -l $INSTALLER/common/jdsp.sh
-    cp -f $INSTALLER/system/priv-app/JamesDSPManager/JamesDSPManager.apk $UNITY/JamesDSPManager.apk
+    install_script -l $TMPDIR/common/jdsp.sh
+    cp -f $TMPDIR/system/priv-app/JamesDSPManager/JamesDSPManager.apk $UNITY/JamesDSPManager.apk
   else
-    cp -f $INSTALLER/system/priv-app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
+    cp -f $TMPDIR/system/priv-app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
     ui_print " "
     ui_print "   JamesDSPManager.apk copied to root of internal storage (sdcard)"
     ui_print "   Install manually after booting"
     sleep 2
   fi
-  rm -rf $INSTALLER/system/priv-app
+  rm -rf $TMPDIR/system/priv-app
 else
-  cp_ch $INSTALLER/custom/$QUAL/$QARCH/libjamesDSPImpulseToolbox.so $INSTALLER/system/lib/libjamesDSPImpulseToolbox.so
+  cp_ch $TMPDIR/custom/$QUAL/$QARCH/libjamesDSPImpulseToolbox.so $TMPDIR/system/lib/libjamesDSPImpulseToolbox.so
 fi
 
 # Lib fix for pixel 2's, 3's, and essential phone
-if $LIBWA || device_check "walleye" || device_check "taimen" || device_check "crosshatch" || device_check "blueline" || device_check "mata" || device_check "jasmine" || device_check "star2lte" || device_check "z2_row"; then
+if $LIBWA; then
   ui_print "   Applying lib workaround..."
   if [ -f $ORIGDIR/system/lib/libstdc++.so ] && [ ! -f $ORIGVEN/lib/libstdc++.so ]; then
     cp_ch $ORIGDIR/system/lib/libstdc++.so $UNITY$VEN/lib/libstdc++.so
