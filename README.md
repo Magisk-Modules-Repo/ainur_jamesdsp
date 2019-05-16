@@ -12,6 +12,9 @@ Double precision (float64) processing. Note that some features are missing from 
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v2.2 - 5.16.2019
+* Update to Unity v4.2
+
 ### v2.1 - 5.3.2019
 * Update to Unity v4.1
 
