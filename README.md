@@ -12,6 +12,9 @@ Double precision (float64) processing. Note that some features are missing from 
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v2.3 - 8.11.2019
+* Unity v4.4 update
+
 ### v2.2 - 5.16.2019
 * Update to Unity v4.2
 
@@ -98,7 +101,7 @@ Double precision (float64) processing. Note that some features are missing from 
 * Unity v1.6.1 update
 
 ### v1.6.5 - 8.26.2018
-* New JamesDSP build (Now supports HTC devices) 
+* New JamesDSP build (Now supports HTC devices)
 * Fixed bit depth problem from HTC and Android Pie
 * Upgraded Fast Fourier Transform libraryand  Android NDK
 
