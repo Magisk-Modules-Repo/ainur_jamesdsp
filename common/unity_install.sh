@@ -14,8 +14,8 @@ osp_detect() {
 }
 
 # Tell user aml is needed if applicable
-if $MAGISK && ! $SYSOVER; then
-  if $BOOTMODE; then LOC="$MOUNTEDROOT/*/system $MODULEROOT/*/system"; else LOC="$MODULEROOT/*/system"; fi
+if $MAGISK; then
+  if $BOOTMODE; then LOC="$MOUNTEDROOT/*/system $MODPATH/*/system"; else LOC="$MODPATH/*/system"; fi
   FILES=$(find $LOC -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml" 2>/dev/null)
   if [ ! -z "$FILES" ] && [ ! "$(echo $FILES | grep '/aml/')" ]; then
     ui_print " "
@@ -98,29 +98,29 @@ else
   ui_print "   Bit perfect drivers selected!"
 fi
 
-tar -xf $TMPDIR/custom/$QUAL.tar.xz -C $TMPDIR/custom 2>/dev/null
+tar -xf $MODPATH/common/$QUAL.tar.xz -C $MODPATH/common 2>/dev/null
 QARCH=$ARCH32
-$HUAWEI && { QARCH="huawei"; ui_print "   Huawei device selected!"; cp_ch $TMPDIR/custom/$QUAL/$QARCH/libjamesdsp.so $TMPDIR/system/lib64/soundfx/libjamesdsp.so; }
+$HUAWEI && { QARCH="huawei"; ui_print "   Huawei device selected!"; cp_ch $MODPATH/common/$QUAL/$QARCH/libjamesdsp.so $MODPATH/system/lib64/soundfx/libjamesdsp.so; }
 
 ui_print " "
 
-cp_ch $TMPDIR/custom/$QUAL/$QARCH/libjamesdsp.so $TMPDIR/system/lib/soundfx/libjamesdsp.so
-cp_ch $TMPDIR/custom/$QUAL/JamesDSPManager.apk $TMPDIR/system/priv-app/JamesDSPManager/JamesDSPManager.apk
+cp_ch $MODPATH/common/$QUAL/$QARCH/libjamesdsp.so $MODPATH/system/lib/soundfx/libjamesdsp.so
+cp_ch $MODPATH/common/$QUAL/JamesDSPManager.apk $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk
 # App only works when installed normally to data in oreo+
 if [ $API -ge 26 ]; then
   if $MAGISK; then
-    install_script -l $TMPDIR/common/jdsp.sh
-    cp -f $TMPDIR/system/priv-app/JamesDSPManager/JamesDSPManager.apk $UNITY/JamesDSPManager.apk
+    install_script -l $MODPATH/common/jdsp.sh
+    cp -f $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk $UNITY/JamesDSPManager.apk
   else
-    cp -f $TMPDIR/system/priv-app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
+    cp -f $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
     ui_print " "
     ui_print "   JamesDSPManager.apk copied to root of internal storage (sdcard)"
     ui_print "   Install manually after booting"
     sleep 2
   fi
-  rm -rf $TMPDIR/system/priv-app
+  rm -rf $MODPATH/system/priv-app
 else
-  cp_ch $TMPDIR/custom/$QUAL/$QARCH/libjamesDSPImpulseToolbox.so $TMPDIR/system/lib/libjamesDSPImpulseToolbox.so
+  cp_ch $MODPATH/common/$QUAL/$QARCH/libjamesDSPImpulseToolbox.so $MODPATH/system/lib/libjamesDSPImpulseToolbox.so
 fi
 
 # Lib fix for pixel 2's, 3's, and essential phone
