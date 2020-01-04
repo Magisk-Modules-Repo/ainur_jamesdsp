@@ -1,7 +1,7 @@
 # External Tools
 
 chmod -R 0755 $MODPATH/common/addon/Volume-Key-Selector/tools
-cp -R $MODPATH/common/addon/Volume-Key-Selector/tools $UF 2>/dev/null
+export PATH=$MODPATH/common/addon/Volume-Key-Selector/tools/$ARCH32:$PATH
 
 keytest() {
   ui_print "- Vol Key Test"

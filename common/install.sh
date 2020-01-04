@@ -14,16 +14,14 @@ osp_detect() {
 }
 
 # Tell user aml is needed if applicable
-if $MAGISK; then
-  if $BOOTMODE; then LOC="$MOUNTEDROOT/*/system $MODPATH/*/system"; else LOC="$MODPATH/*/system"; fi
-  FILES=$(find $LOC -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml" 2>/dev/null)
-  if [ ! -z "$FILES" ] && [ ! "$(echo $FILES | grep '/aml/')" ]; then
-    ui_print " "
-    ui_print "   ! Conflicting audio mod found!"
-    ui_print "   ! You will need to install !"
-    ui_print "   ! Audio Modification Library !"
-    sleep 3
-  fi
+if $BOOTMODE; then LOC="$MODULEROOT/*/system $MODPATH/*/system"; else LOC="$MODPATH/*/system"; fi
+FILES=$(find $LOC -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml" 2>/dev/null)
+if [ ! -z "$FILES" ] && [ ! "$(echo $FILES | grep '/aml/')" ]; then
+  ui_print " "
+  ui_print "   ! Conflicting audio mod found!"
+  ui_print "   ! You will need to install !"
+  ui_print "   ! Audio Modification Library !"
+  sleep 3
 fi
 
 # GET HQ/SQ AND HUAWEI FROM ZIP NAME
@@ -108,16 +106,8 @@ cp_ch $MODPATH/common/$QUAL/$QARCH/libjamesdsp.so $MODPATH/system/lib/soundfx/li
 cp_ch $MODPATH/common/$QUAL/JamesDSPManager.apk $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk
 # App only works when installed normally to data in oreo+
 if [ $API -ge 26 ]; then
-  if $MAGISK; then
-    install_script -l $MODPATH/common/jdsp.sh
-    cp -f $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk $UNITY/JamesDSPManager.apk
-  else
-    cp -f $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk $SDCARD/JamesDSPManager.apk
-    ui_print " "
-    ui_print "   JamesDSPManager.apk copied to root of internal storage (sdcard)"
-    ui_print "   Install manually after booting"
-    sleep 2
-  fi
+  install_script -l $MODPATH/common/jdsp.sh
+  cp -f $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk $MODPATH/JamesDSPManager.apk
   rm -rf $MODPATH/system/priv-app
 else
   cp_ch $MODPATH/common/$QUAL/$QARCH/libjamesDSPImpulseToolbox.so $MODPATH/system/lib/libjamesDSPImpulseToolbox.so
@@ -127,16 +117,16 @@ fi
 if $LIBWA; then
   ui_print "   Applying lib workaround..."
   if [ -f $ORIGDIR/system/lib/libstdc++.so ] && [ ! -f $ORIGVEN/lib/libstdc++.so ]; then
-    cp_ch $ORIGDIR/system/lib/libstdc++.so $UNITY$VEN/lib/libstdc++.so
+    cp_ch $ORIGDIR/system/lib/libstdc++.so $MODPATH$VEN/lib/libstdc++.so
   elif [ -f $ORIGVEN/lib/libstdc++.so ] && [ ! -f $ORIGDIR/system/lib/libstdc++.so ]; then
-    cp_ch $ORIGVEN/lib/libstdc++.so $UNITY/system/lib/libstdc++.so
+    cp_ch $ORIGVEN/lib/libstdc++.so $MODPATH/system/lib/libstdc++.so
   fi
 fi
 
 ui_print "   Patching existing audio_effects files..."
 for OFILE in ${CFGS}; do
-  FILE="$UNITY$(echo $OFILE | sed "s|^/vendor|/system/vendor|g")"
-  cp_ch -i $ORIGDIR$OFILE $FILE
+  FILE="$MODPATH$(echo $OFILE | sed "s|^/vendor|/system/vendor|g")"
+  cp_ch -n $ORIGDIR$OFILE $FILE
   osp_detect $FILE
   case $FILE in
     *.conf) sed -i "/jamesdsp {/,/}/d" $FILE
