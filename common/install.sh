@@ -14,7 +14,7 @@ osp_detect() {
 }
 
 # Tell user aml is needed if applicable
-if $BOOTMODE; then LOC="$MODULEROOT/*/system $MODPATH/*/system"; else LOC="$MODPATH/*/system"; fi
+$BOOTMODE && LOC="$NVBASE/modules/*/system $MODULEROOT/*/system" || LOC="$MODULEROOT/*/system"
 FILES=$(find $LOC -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml" 2>/dev/null)
 if [ ! -z "$FILES" ] && [ ! "$(echo $FILES | grep '/aml/')" ]; then
   ui_print " "
