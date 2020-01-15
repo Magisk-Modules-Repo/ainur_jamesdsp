@@ -6,11 +6,6 @@ Standard JDSP library. Highly recommend
 ### Bit Perfect:
 Double precision (float64) processing. Note that some features are missing from this one like trusurround (virtual surround spatializer
 
-## Compatibility
-* Android Jellybean+
-* Selinux enforcing
-* All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
-
 ## Change Log
 ### v2.5 - 1.4.2020
 * Switched from Unity to MMT-Ex
