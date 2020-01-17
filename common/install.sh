@@ -14,8 +14,7 @@ osp_detect() {
 }
 
 # Tell user aml is needed if applicable
-$BOOTMODE && LOC="$NVBASE/modules/*/system $MODULEROOT/*/system" || LOC="$MODULEROOT/*/system"
-FILES=$(find $LOC -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml" 2>/dev/null)
+FILES=$(find $NVBASE/modules/*/system $MODULEROOT/*/system -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml" 2>/dev/null)
 if [ ! -z "$FILES" ] && [ ! "$(echo $FILES | grep '/aml/')" ]; then
   ui_print " "
   ui_print "   ! Conflicting audio mod found!"
@@ -116,14 +115,15 @@ fi
 # Lib fix for pixel 2's, 3's, and essential phone
 if $LIBWA; then
   ui_print "   Applying lib workaround..."
-  if [ -f $ORIGDIR/system/lib/libstdc++.so ] && [ ! -f $ORIGVEN/lib/libstdc++.so ]; then
-    cp_ch $ORIGDIR/system/lib/libstdc++.so $MODPATH$VEN/lib/libstdc++.so
-  elif [ -f $ORIGVEN/lib/libstdc++.so ] && [ ! -f $ORIGDIR/system/lib/libstdc++.so ]; then
-    cp_ch $ORIGVEN/lib/libstdc++.so $MODPATH/system/lib/libstdc++.so
+  if [ -f $ORIGDIR/system/lib/libstdc++.so ] && [ ! -f $ORIGDIR/vendor/lib/libstdc++.so ]; then
+    cp_ch $ORIGDIR/system/lib/libstdc++.so $MODPATH/system/vendor/lib/libstdc++.so
+  elif [ -f $ORIGDIR/vendor/lib/libstdc++.so ] && [ ! -f $ORIGDIR/system/lib/libstdc++.so ]; then
+    cp_ch $ORIGDIR/vendor/lib/libstdc++.so $MODPATH/system/lib/libstdc++.so
   fi
 fi
 
 ui_print "   Patching existing audio_effects files..."
+CFGS="$(find /system /vendor -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml")"
 for OFILE in ${CFGS}; do
   FILE="$MODPATH$(echo $OFILE | sed "s|^/vendor|/system/vendor|g")"
   cp_ch -n $ORIGDIR$OFILE $FILE
