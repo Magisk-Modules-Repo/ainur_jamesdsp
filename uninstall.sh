@@ -1,8 +1,3 @@
-if [ $API -ge 26 ]; then
-  pm uninstall james.dsp
-  rm -rf /data/data/james.dsp
-  rm -f /storage/emulated/0/JamesDSPManager.apk
-fi
 # Don't modify anything after this
 if [ -f $INFO ]; then
   while read LINE; do
