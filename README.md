@@ -7,6 +7,9 @@ Standard JDSP library. Highly recommend
 Double precision (float64) processing. Note that some features are missing from this one like trusurround (virtual surround spatializer
 
 ## Change Log
+### v2.7 - 1.22.2020
+* Update to MMT-Ex v1.3 (Fixes issues on Q)
+
 ### v2.6 - 1.17.2020
 * Update to MMT-Ex v1.2
 
