@@ -1,5 +1,5 @@
 (
-while [ $(getprop sys.boot_completed) -ne 1 ] || [ "$(getprop init.svc.bootanim | tr '[:upper:]' '[:lower:]')" != "stopped" ]; do
+while [ "$(getprop sys.boot_completed)" != "1" ]; do
   sleep 1
 done
 
