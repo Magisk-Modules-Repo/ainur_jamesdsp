@@ -23,95 +23,66 @@ if [ ! -z "$FILES" ] && [ ! "$(echo $FILES | grep '/aml/')" ]; then
   sleep 3
 fi
 
-# GET HQ/SQ AND HUAWEI FROM ZIP NAME
-OIFS=$IFS; IFS=\|
-case $(echo $(basename $ZIPFILE) | tr '[:upper:]' '[:lower:]') in
-  *ff*) QUAL=ff;;
-  *bp*) QUAL=bp;;
-esac
-case $(echo $(basename $ZIPFILE) | tr '[:upper:]' '[:lower:]') in
-  *nhua*) HUAWEI=false;;
-  *hua*) HUAWEI=true;;
-esac
-case $(echo $(basename $ZIPFILE) | tr '[:upper:]' '[:lower:]') in
-  *lib*) LIBWA=true;;
-  *nlib*) LIBWA=false;;
-esac
-IFS=$OIFS
-
-# Check for devices that need lib workaround
-if device_check "walleye" || device_check "taimen" || device_check "crosshatch" || device_check "blueline" || device_check "mata" || device_check "jasmine" || device_check "star2lte" || device_check "z2_row"; then
-  LIBWA=true
+ui_print " "
+ui_print "- Select Version -"
+ui_print "  New or Old app?"
+ui_print "  Vol+ New (recommended), Vol- Old"
+if $VKSEL; then
+  VER=new
+  ui_print "  Note that profiles for old jdsp are incompatible"
+  ui_print "  And will cause app to crash!"
+else
+  VER=old
+  # Check for devices that need lib workaround
+  if device_check -m "Essential Products" || device_check -m "Google" || device_check "sailfish" || device_check "marlin"; then
+    LIBWA=true
+  fi
+  ui_print " "
+  ui_print "- Select Driver -"
+  ui_print "   Choose which drivers you want installed:"
+  ui_print "   Vol Up = Full feature (Highly recommended)"
+  ui_print "   Vol Down = Bit perfect"
+  if $VKSEL; then
+    QUAL=ff
+  else
+    QUAL=bp
+  fi
+  ui_print " "
+  ui_print " - Use lib workaround? -"
+  ui_print "   Only choose yes if you're having issues"
+  ui_print "   Vol+ = yes, Vol- = no (recommended)"
+  if $VKSEL; then
+    LIBWA=true
+  else
+    LIBWA=false
+  fi
 fi
 
 ui_print " "
-if [ -z $QUAL ] || [ -z $HUAWEI ] || [ -z $LIBWA ]; then
-  if [ -z $QUAL ]; then
-    ui_print "- Select Driver -"
-    ui_print "   Choose which drivers you want installed:"
-    ui_print "   Vol Up = Full feature (Highly recommended)"
-    ui_print "   Vol Down = Bit perfect"
-    if $VKSEL; then
-      QUAL=ff
-    else
-      QUAL=bp
-    fi
-  else
-    ui_print "   Driver quality specified in zipname!"
-  fi
-  if [ -z $HUAWEI ]; then
-    ui_print " "
-    ui_print "- Select Huawei -"
-    ui_print "   Is this a Huawei device?"
-    ui_print "   Vol Up = Yes, Vol Down = No"
-    if $VKSEL; then
-      HUAWEI=true
-    else
-      HUAWEI=false
-    fi
-  else
-    ui_print "   Driver quality specified in zipname!"
-  fi
-  if [ -z $LIBWA ]; then
-    ui_print " "
-    ui_print " - Use lib workaround? -"
-    ui_print "   Only choose yes if you're having issues"
-    ui_print "   Vol+ = yes, Vol- = no (recommended)"
-    if $VKSEL; then
-      LIBWA=true
-    else
-      LIBWA=false
-    fi
-  else
-    ui_print "   Lib workaround option specified in zipname!"
-  fi
+ui_print "- Select Huawei -"
+ui_print "   Is this a Huawei device?"
+ui_print "   Vol Up = Yes, Vol Down = No"
+if $VKSEL; then
+  HUAWEI=true
 else
-  ui_print "   Options specified in zipname!"
+  HUAWEI=false
 fi
 
-if [ "$QUAL" == "ff" ]; then
-  ui_print "   Full feature drivers selected!"
-else
-  ui_print "   Bit perfect drivers selected!"
-fi
-
-tar -xf $MODPATH/common/$QUAL.tar.xz -C $MODPATH/common 2>/dev/null
-QARCH=$ARCH32
-$HUAWEI && { QARCH="huawei"; ui_print "   Huawei device selected!"; cp_ch $MODPATH/common/$QUAL/$QARCH/libjamesdsp.so $MODPATH/system/lib64/soundfx/libjamesdsp.so; }
-
-ui_print " "
-
-cp_ch $MODPATH/common/$QUAL/$QARCH/libjamesdsp.so $MODPATH/system/lib/soundfx/libjamesdsp.so
-cp_ch $MODPATH/common/$QUAL/JamesDSPManager.apk $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk
+tar -xf $MODPATH/common/$VER.tar.xz -C $MODPATH/common 2>/dev/null
+[ "$VER" == "new" ] && cp -rf $MODPATH/common/$VER/JamesDSP /storage/emulated/0/
+$HUAWEI && { QARCH="huawei"; cp_ch $MODPATH/common/$VER/$QUAL/$QARCH/libjamesdsp.so $MODPATH/system/lib64/soundfx/libjamesdsp.so; } || QARCH=$ARCH32
+cp_ch $MODPATH/common/$VER/$QUAL/$QARCH/libjamesdsp.so $MODPATH/system/lib/soundfx/libjamesdsp.so
 # App only works when installed normally to data in oreo+
-if [ $API -ge 26 ]; then
+if [ $API -ge 26 ] || [ "$VER" == "new" ]; then
   install_script -l $MODPATH/common/jdsp.sh
-  cp -f $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk $MODPATH/JamesDSPManager.apk
-  rm -rf $MODPATH/system/priv-app
+  cp -f $MODPATH/common/$VER/$QUAL/JamesDSPManager.apk $MODPATH/JamesDSPManager.apk
 else
-  cp_ch $MODPATH/common/$QUAL/$QARCH/libjamesDSPImpulseToolbox.so $MODPATH/system/lib/libjamesDSPImpulseToolbox.so
+  cp_ch $MODPATH/common/$VER/$QUAL/JamesDSPManager.apk $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk
+  cp_ch $MODPATH/common/$VER/$QUAL/$QARCH/libjamesDSPImpulseToolbox.so $MODPATH/system/lib/libjamesDSPImpulseToolbox.so
+  cp_ch $MODPATH/common/$VER/privapp-permisisons-james.dsp.xml $MODPATH/system/etc/privapp-permisisons-james.dsp.xml
 fi
 
+ui_print " "
 # Lib fix for pixel 2's, 3's, and essential phone
 if $LIBWA; then
   ui_print "   Applying lib workaround..."

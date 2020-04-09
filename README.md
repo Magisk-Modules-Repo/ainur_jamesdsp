@@ -1,12 +1,33 @@
 # Ainur JamesDSPManager
 This module enables JamesDSPManager. [More details in support thread](https://forum.xda-developers.com/android/software/soundmod-ainur-audio-t3450516).
-## Special features:
-### Full featured:
-Standard JDSP library. Highly recommend
-### Bit Perfect:
-Double precision (float64) processing. Note that some features are missing from this one like trusurround (virtual surround spatializer
+## Notes
+* New app is closed source, old one is open sourced
+* Old app has 2 jdsp library options:
+  * Full featured: Standard JDSP library. Highly recommend
+  * Bit perfect: Double precision (float64) processing. Note that some features are missing from this one like trusurround (virtual surround spatializer
+
+### Profiles are incompatible between old and new JDSP!
 
 ## Change Log
+### v3.0 - 4.9.2020
+* Fix boot script
+* Update to MMT-EX v1.5
+* New JDSP app update!:
+  * Reduce parameter commit
+  * Junked Convolver benchmark system, improve device responsiveness when the device is booting
+  * New Dynamic range compressor, full automatic internal parameter adjustment(BUT haven't fully adapt to level depend system(I mean audio framework)
+  * New bass boost system, the system automatically detect "Interesting frequency", and adjust filter gain, bandwidth accordingly
+  * New FIR Equalizer, enhance interpolator algorithms, more interpolation mode and faster filter generation
+  * New convolution algorithm, much faster, much more power saving, remove impulse response cutting feature, however, algorithm not yet fully completed, there will still update that boost performance further.
+  * New stereo widening algorithm
+  * New BS2B Crossfeed system, with traditional BS2B and a few HRTF based crossfeed(Include the one provided by @Joe0Bloggs )
+  * Remove computationally heavy load 7.1 surround simulation, if you still want one, go download Hiby music player!
+  * More stable live programming virtual machine, more built-in features that allow user to build very complex audio effect.
+  * Processing performance improvement for all effects
+  * Arbitrary phase response
+  * DDC, Reverb, Arbitrary magnitude response algorithm remain the same
+  * Remove all GPL code, allow full close source implementation😂😂😂However live programming compiler/Virtual machine will still go open source, last but not least, all rewritten C API will still go open source for our reference implementation of processing system.
+
 ### v2.7 - 1.22.2020
 * Update to MMT-Ex v1.3 (Fixes issues on Q)
 

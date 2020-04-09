@@ -1,5 +1,5 @@
 (
-while [ "$(getprop sys.boot_completed)" != "1" ]; do
+while [ "$(getprop sys.boot_completed)" != "1" ] && [ ! -d "/storage/emulated/0/Android" ]; do
   sleep 1
 done
 
