@@ -1,5 +1,5 @@
-# Ainur JamesDSPManager
-This module enables JamesDSPManager. [More details in support thread](https://forum.xda-developers.com/android/software/soundmod-ainur-audio-t3450516).
+# JamesDSPManager
+This module enables JamesDSPManager. [More details in support thread](https://forum.xda-developers.com/android/apps-games/app-reformed-dsp-manager-t3607970).
 ## Notes
 * New app is closed source, old one is open sourced
 * Old app has 2 jdsp library options:
