@@ -9,6 +9,15 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 ### Profiles are incompatible between old and new JDSP!
 
 ## Change Log
+### v3.1 - 8.25.2020
+* New JDSP app updated!:
+  * Equalizer interface and actual frequency response mismatch
+  * libsndfile replaced with much smaller dr_libs for impulse response file loading
+  * Uses Android 10 API as compiling
+  * Additional features:
+    * Shrinking impulse response according users thresholds
+    * Uses minimum phase transform on impulse response if user needed
+    * Customizable channel dependent sample delay at the impulse response beginnin
 ### v3.0 - 4.9.2020
 * Fix boot script
 * Update to MMT-EX v1.5
