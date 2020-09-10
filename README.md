@@ -10,7 +10,7 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 
 ## Change Log
 ### v3.2 - 9.9.2020
-* Added hiden_api_policy workaround for android 11
+* Added hidden_api_policy workaround for android 11
 
 ### v3.1 - 8.25.2020
 * New JDSP app updated!:
