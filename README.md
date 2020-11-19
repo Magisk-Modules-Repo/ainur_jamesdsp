@@ -9,6 +9,10 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 ### Profiles are incompatible between old and new JDSP!
 
 ## Change Log
+### v3.3 - 11.2.2020
+* Update to MMT-Ex v1.6
+* Update volkey addon
+
 ### v3.2 - 9.9.2020
 * Added hidden_api_policy workaround for android 11
 

@@ -27,7 +27,7 @@ ui_print " "
 ui_print "- Select Version -"
 ui_print "  New or Old app?"
 ui_print "  Vol+ New (recommended), Vol- Old"
-if $VKSEL; then
+if chooseport; then
   VER=new
   ui_print "  Note that profiles for old jdsp are incompatible"
   ui_print "  And will cause app to crash!"
@@ -42,7 +42,7 @@ else
   ui_print "   Choose which drivers you want installed:"
   ui_print "   Vol Up = Full feature (Highly recommended)"
   ui_print "   Vol Down = Bit perfect"
-  if $VKSEL; then
+  if chooseport 5; then
     QUAL=ff
   else
     QUAL=bp
@@ -51,7 +51,7 @@ else
   ui_print " - Use lib workaround? -"
   ui_print "   Only choose yes if you're having issues"
   ui_print "   Vol+ = yes, Vol- = no (recommended)"
-  if $VKSEL; then
+  if chooseport 5; then
     LIBWA=true
   else
     LIBWA=false
@@ -62,7 +62,7 @@ ui_print " "
 ui_print "- Select Huawei -"
 ui_print "   Is this a Huawei device?"
 ui_print "   Vol Up = Yes, Vol Down = No"
-if $VKSEL; then
+if chooseport; then
   HUAWEI=true
 else
   HUAWEI=false
