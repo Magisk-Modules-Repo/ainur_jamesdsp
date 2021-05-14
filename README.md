@@ -9,6 +9,9 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 ### Profiles are incompatible between old and new JDSP!
 
 ## Change Log
+### v3.4 - 5.14.2021
+* Update volkey addon
+
 ### v3.3 - 11.2.2020
 * Update to MMT-Ex v1.6
 * Update volkey addon
