@@ -1,14 +1,19 @@
 # JamesDSPManager
 This module enables JamesDSPManager. [More details in support thread](https://forum.xda-developers.com/android/apps-games/app-reformed-dsp-manager-t3607970).
-## Notes
-* New app is closed source, old one is open sourced
-* Old app has 2 jdsp library options:
-  * Full featured: Standard JDSP library. Highly recommend
-  * Bit perfect: Double precision (float64) processing. Note that some features are missing from this one like trusurround (virtual surround spatializer
 
 ### Profiles are incompatible between old and new JDSP!
 
 ## Change Log
+### v4.0 - 9.8.2021
+* JDSP app updated!:
+  * New app/drivers made open sourced
+  * Frequency domain dynamic range compression, give you much crazier compression
+  * New dynamic bass boost, proper implementation of signal power detection, proper sample delay apply to multirate analysis and deploy state space filter to achieve boosting filter parameters.
+  * Greatly reduce power consumption for some cases, especially when Convolver and Equalizer is used
+  * Add user manual to main app
+* No more new/old options
+* Removed old options
+
 ### v3.4 - 5.14.2021
 * Update volkey addon
 

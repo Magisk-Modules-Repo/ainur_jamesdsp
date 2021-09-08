@@ -1,0 +1,14 @@
+desc: Fractional delay line
+
+@init
+ptr1 = 0;
+req = fractionalDelayLineInit(ptr1, 1024);
+ptr2 = ptr1 + req;
+req = fractionalDelayLineInit(ptr2, 1024);
+
+fractionalDelayLineSetDelay(ptr1, 15.1);
+fractionalDelayLineSetDelay(ptr2, 2.4);
+
+@sample
+spl0 = fractionalDelayLineProcess(ptr1, spl0);
+spl1 = fractionalDelayLineProcess(ptr2, spl1);

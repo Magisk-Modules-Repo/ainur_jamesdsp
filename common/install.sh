@@ -14,7 +14,7 @@ osp_detect() {
 }
 
 # Tell user aml is needed if applicable
-FILES=$(find $NVBASE/modules/*/system $MODULEROOT/*/system -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml" 2>/dev/null)
+FILES=$(find $NVBASE/modules/*/system $MODULEROOT/*/system -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml" 2>/dev/null | sed "/$MODID/d")
 if [ ! -z "$FILES" ] && [ ! "$(echo $FILES | grep '/aml/')" ]; then
   ui_print " "
   ui_print "   ! Conflicting audio mod found!"
@@ -24,75 +24,25 @@ if [ ! -z "$FILES" ] && [ ! "$(echo $FILES | grep '/aml/')" ]; then
 fi
 
 ui_print " "
-ui_print "- Select Version -"
-ui_print "  New or Old app?"
-ui_print "  Vol+ New (recommended), Vol- Old"
-if chooseport; then
-  VER=new
-  ui_print "  Note that profiles for old jdsp are incompatible"
-  ui_print "  And will cause app to crash!"
-else
-  VER=old
-  # Check for devices that need lib workaround
-  if device_check -m "Essential Products" || device_check -m "Google" || device_check "sailfish" || device_check "marlin"; then
-    LIBWA=true
-  fi
-  ui_print " "
-  ui_print "- Select Driver -"
-  ui_print "   Choose which drivers you want installed:"
-  ui_print "   Vol Up = Full feature (Highly recommended)"
-  ui_print "   Vol Down = Bit perfect"
-  if chooseport 5; then
-    QUAL=ff
-  else
-    QUAL=bp
-  fi
-  ui_print " "
-  ui_print " - Use lib workaround? -"
-  ui_print "   Only choose yes if you're having issues"
-  ui_print "   Vol+ = yes, Vol- = no (recommended)"
-  if chooseport 5; then
-    LIBWA=true
-  else
-    LIBWA=false
-  fi
-fi
-
-ui_print " "
 ui_print "- Select Huawei -"
 ui_print "   Is this a Huawei device?"
 ui_print "   Vol Up = Yes, Vol Down = No"
 if chooseport; then
-  HUAWEI=true
+  QARCH="huawei"
+  cp_ch $MODPATH/common/files/$QARCH/libjamesdsp.so $MODPATH/system/lib64/soundfx/libjamesdsp.so
 else
-  HUAWEI=false
+  QARCH=$ARCH32
 fi
+cp_ch $MODPATH/common/files/$QARCH/libjamesdsp.so $MODPATH/system/lib/soundfx/libjamesdsp.so
 
-tar -xf $MODPATH/common/$VER.tar.xz -C $MODPATH/common 2>/dev/null
-[ "$VER" == "new" ] && cp -rf $MODPATH/common/$VER/JamesDSP /storage/emulated/0/
-$HUAWEI && { QARCH="huawei"; cp_ch $MODPATH/common/$VER/$QUAL/$QARCH/libjamesdsp.so $MODPATH/system/lib64/soundfx/libjamesdsp.so; } || QARCH=$ARCH32
-cp_ch $MODPATH/common/$VER/$QUAL/$QARCH/libjamesdsp.so $MODPATH/system/lib/soundfx/libjamesdsp.so
 # App only works when installed normally to data in oreo+
-if [ $API -ge 26 ] || [ "$VER" == "new" ]; then
-  install_script -l $MODPATH/common/jdsp.sh
-  cp -f $MODPATH/common/$VER/$QUAL/JamesDSPManager.apk $MODPATH/JamesDSPManager.apk
-else
-  cp_ch $MODPATH/common/$VER/$QUAL/JamesDSPManager.apk $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk
-  cp_ch $MODPATH/common/$VER/$QUAL/$QARCH/libjamesDSPImpulseToolbox.so $MODPATH/system/lib/libjamesDSPImpulseToolbox.so
-  cp_ch $MODPATH/common/$VER/privapp-permisisons-james.dsp.xml $MODPATH/system/etc/privapp-permisisons-james.dsp.xml
+if [ $API -ge 26 ]; then
+  install_script -l $MODPATH/common/files/jdsp.sh
+  mv -f $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk $MODPATH/JamesDSPManager.apk
+  rm -rf $MODPATH/system/priv-app
 fi
 
 ui_print " "
-# Lib fix for pixel 2's, 3's, and essential phone
-if $LIBWA; then
-  ui_print "   Applying lib workaround..."
-  if [ -f $ORIGDIR/system/lib/libstdc++.so ] && [ ! -f $ORIGDIR/vendor/lib/libstdc++.so ]; then
-    cp_ch $ORIGDIR/system/lib/libstdc++.so $MODPATH/system/vendor/lib/libstdc++.so
-  elif [ -f $ORIGDIR/vendor/lib/libstdc++.so ] && [ ! -f $ORIGDIR/system/lib/libstdc++.so ]; then
-    cp_ch $ORIGDIR/vendor/lib/libstdc++.so $MODPATH/system/lib/libstdc++.so
-  fi
-fi
-
 ui_print "   Patching existing audio_effects files..."
 CFGS="$(find /system /vendor -type f -name "*audio_effects*.conf" -o -name "*audio_effects*.xml")"
 for OFILE in ${CFGS}; do
