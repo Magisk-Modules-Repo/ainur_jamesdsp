@@ -4,6 +4,9 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 ### Profiles are incompatible between old and new JDSP!
 
 ## Change Log
+### v4.1 - 9.9.2021
+* Fix app update process - uninstall app during zip flash, reboot to complete process
+
 ### v4.0 - 9.8.2021
 * JDSP app updated!:
   * New app/drivers made open sourced

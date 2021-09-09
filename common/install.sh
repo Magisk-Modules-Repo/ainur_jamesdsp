@@ -40,6 +40,7 @@ if [ $API -ge 26 ]; then
   install_script -l $MODPATH/common/files/jdsp.sh
   mv -f $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk $MODPATH/JamesDSPManager.apk
   rm -rf $MODPATH/system/priv-app
+  pm list packages -3 | grep james.dsp >/dev/null && pm uninstall james.dsp >/dev/null
 fi
 
 ui_print " "
