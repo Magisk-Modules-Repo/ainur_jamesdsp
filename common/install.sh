@@ -36,11 +36,15 @@ fi
 cp_ch $MODPATH/common/files/$QARCH/libjamesdsp.so $MODPATH/system/lib/soundfx/libjamesdsp.so
 
 # App only works when installed normally to data in oreo+
+VER=91
 if [ $API -ge 26 ]; then
   install_script -l $MODPATH/common/files/jdsp.sh
   mv -f $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk $MODPATH/JamesDSPManager.apk
   rm -rf $MODPATH/system/priv-app
-  pm list packages -3 | grep james.dsp >/dev/null && pm uninstall james.dsp >/dev/null
+  INSVER=$(pm list packages -3 --show-versioncode | grep james.dsp | sed 's/.*versionCode://')
+  if [ "$INSVER" ]; then
+    [ $INSVER -lt $VER ] && pm uninstall james.dsp >/dev/null
+  fi
 fi
 
 ui_print " "
@@ -62,4 +66,5 @@ for OFILE in ${CFGS}; do
   esac
 done
 
+cp -rf $MODPATH/common/files/JamesDSP /storage/emulated/0/JamesDSP
 [ $API -gt 29 ] && { ui_print "   Enabling hidden api policy"; settings put global hidden_api_policy 1; }

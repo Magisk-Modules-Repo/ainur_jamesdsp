@@ -5,6 +5,8 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 
 ## Change Log
 ### v4.1 - 9.9.2021
+* Only uninstall app if older than current
+* Update mmtex to v1.7
 * Fix app update process - uninstall app during zip flash, reboot to complete process
 
 ### v4.0 - 9.8.2021
