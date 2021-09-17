@@ -4,6 +4,9 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 ### Profiles are incompatible between old and new JDSP!
 
 ## Change Log
+### v4.2 - 9.17.2021
+* Always install as data app, no need for system app in older android versions
+
 ### v4.1 - 9.9.2021
 * Only uninstall app if older than current
 * Update mmtex to v1.7

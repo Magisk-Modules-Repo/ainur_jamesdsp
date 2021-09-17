@@ -36,16 +36,9 @@ fi
 cp_ch $MODPATH/common/files/$QARCH/libjamesdsp.so $MODPATH/system/lib/soundfx/libjamesdsp.so
 
 # App only works when installed normally to data in oreo+
-VER=91
-if [ $API -ge 26 ]; then
-  install_script -l $MODPATH/common/files/jdsp.sh
-  mv -f $MODPATH/system/priv-app/JamesDSPManager/JamesDSPManager.apk $MODPATH/JamesDSPManager.apk
-  rm -rf $MODPATH/system/priv-app
-  INSVER=$(pm list packages -3 --show-versioncode | grep james.dsp | sed 's/.*versionCode://')
-  if [ "$INSVER" ]; then
-    [ $INSVER -lt $VER ] && pm uninstall james.dsp >/dev/null
-  fi
-fi
+install_script -l $MODPATH/common/files/jdsp.sh
+INSVER=$(pm list packages -3 --show-versioncode | grep james.dsp | sed 's/.*versionCode://')
+[ "$INSVER" ] && { [ $INSVER -lt $APPVER ] && pm uninstall james.dsp >/dev/null; }
 
 ui_print " "
 ui_print "   Patching existing audio_effects files..."
