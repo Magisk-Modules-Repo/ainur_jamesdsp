@@ -4,6 +4,9 @@ This module enables JamesDSPManager. [More details in support thread](https://fo
 ### Profiles are incompatible between old and new JDSP!
 
 ## Change Log
+### v4.3 - 11.21.2021
+* MMT-EX v1.8 update - fix for magisk canary, minmagisk now 20.4
+
 ### v4.2 - 9.17.2021
 * Always install as data app, no need for system app in older android versions
 
