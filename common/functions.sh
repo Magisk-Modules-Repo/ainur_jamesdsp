@@ -17,11 +17,11 @@ umount_mirrors() {
     umount -l $i 2>/dev/null
   done
   rm -rf $ORIGDIR 2>/dev/null
-  mount -o ro,remount $MAGISKTMP
+  $KSU && mount -o ro,remount $MAGISKTMP
 }
 
 cleanup() {
-  $KSU && umount_mirrors
+  if $KSU || [ $MAGISK_VER_CODE -ge 27000 ]; then umount_mirrors; fi
   rm -rf $MODPATH/common $MODPATH/install.zip 2>/dev/null
 }
 
@@ -130,7 +130,7 @@ prop_process() {
 }
 
 mount_mirrors() {
-  mount -o rw,remount $MAGISKTMP
+  $KSU && mount -o rw,remount $MAGISKTMP
   mkdir -p $ORIGDIR/system
   if $SYSTEM_ROOT; then
     mkdir -p $ORIGDIR/system_root
@@ -159,6 +159,9 @@ ui_print " "
 # Min KSU v0.6.6
 [ -z $KSU ] && KSU=false
 $KSU && { [ $KSU_VER_CODE -lt 11184 ] && require_new_ksu; }
+# APatch is fork of KSU, treat same
+[ -z $APATCH ] && APATCH=false
+[ "$APATCH" == "true" ] && KSU=true
 
 # Start debug
 set -x
@@ -177,7 +180,15 @@ if $KSU; then
   ORIGDIR="$MAGISKTMP/mirror"
   mount_mirrors
 elif [ "$(magisk --path 2>/dev/null)" ]; then
-  ORIGDIR="$(magisk --path 2>/dev/null)/.magisk/mirror"
+  if [ $MAGISK_VER_CODE -ge 27000 ]; then # Atomic Mount
+    if [ -z $MAGISKTMP ]; then
+      [ -d /sbin ] && MAGISKTMP=/sbin || MAGISKTMP=/debug_ramdisk
+    fi
+    ORIGDIR="$MAGISKTMP/mirror"
+    mount_mirrors
+  else
+    ORIGDIR="$(magisk --path 2>/dev/null)/.magisk/mirror"
+  fi
 elif [ "$(echo $MAGISKTMP | awk -F/ '{ print $NF}')" == ".magisk" ]; then
   ORIGDIR="$MAGISKTMP/mirror"
 else
@@ -190,9 +201,9 @@ else
   LIBPATCH="\/system"
   LIBDIR=/system
 fi
-# Detect extra partition compatibility (KernelSU or Magisk Delta)
+# Detect extra partition compatibility (KernelSU or Magisk Delta/Kitsune)
 EXTRAPART=false
-if $KSU || [ "$(echo $MAGISK_VER | awk -F- '{ print $NF}')" == "delta" ]; then
+if $KSU || [ "$(echo $MAGISK_VER | awk -F- '{ print $NF}')" == "delta" ] || [ "$(echo $MAGISK_VER | awk -F- '{ print $NF}')" == "kitsune" ]; then
   EXTRAPART=true
 elif ! $PARTOVER; then
   unset PARTITIONS
